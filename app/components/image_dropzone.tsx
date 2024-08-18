@@ -3,7 +3,10 @@ import { UploadDropzone } from "@uploadthing/react";
 
 import { OurFileRouter } from "../api/uploadthing/core";
 
+
 export const DropImageUploader = () => (
+
+
     <UploadDropzone<OurFileRouter, "imageUploader">
         endpoint="imageUploader"
         onClientUploadComplete={(res) => {
