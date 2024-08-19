@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import ImageUpload from "./components/image_upload";
-import { DropImageUploader } from "./components/image_dropzone";
+import ImageUpload from "../../components/image_upload";
+import { DropImageUploader } from "../../components/image_dropzone";
 const f = createUploadthing();
 
 
