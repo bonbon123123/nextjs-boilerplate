@@ -3,15 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
-  --white: 255, 255, 255, 1;
-  --lavender-web: 214, 227, 248, 1;
-  --black: 0, 0, 0, 1;
-  --pigment-green: 0, 175, 84, 1;
-  --desert-sand: 228, 187, 151, 1;
+  --main: rgba(119, 51, 68, 1);
+  --light-main: rgba(171, 73, 98, 1);
+  --secondary: rgba(69, 111, 32, 1);
+  --light-secondary: rgba(96, 153, 45, 1);
+  --light: rgba(195, 223, 224, 1);
+  --dark: rgba(2, 24, 43, 1);
+  --black: rgba(0, 0, 0, 1);
+  --white: rgba(255, 255, 255, 1);
 }
+
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -23,7 +24,7 @@
 
 body {
   color: rgb(var(--black));
-  background: linear-gradient(to bottom, rgb(var(--lavender-web)), rgb(var(--desert-sand))) no-repeat;
+  background-image: linear-gradient(to bottom, var(--white), var(--white));
   height: 100vh;
   margin: 0;
   padding: 0;

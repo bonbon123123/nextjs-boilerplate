@@ -7,7 +7,10 @@ const PostSchema = new mongoose.Schema({
     downvotes: Number,
     createdAt:Date,
     updatedAt:Date,
-    Locked:Boolean
+    Locked:Boolean,
+    Name:String,
+    Size:Number,
+    Type:String,
 }, { timestamps: true });
 
 const Post = mongoose.models.Post || mongoose.model("Post", PostSchema);

@@ -5,10 +5,7 @@ interface ButtonProps {
     onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
     className?: string;
     style?: React.CSSProperties;
-    bgColor?: string;
-    hoverBgColor?: string;
-    textColor?: string;
-    hoverTextColor?: string;
+    disabled?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -16,17 +13,19 @@ const Button: React.FC<ButtonProps> = ({
     onClick,
     className,
     style,
-    bgColor,
-    hoverBgColor,
-    textColor,
-    hoverTextColor,
+    disabled,
     ...props
 }) => {
     return (
         <button
-            className={`bg-[var(--${bgColor || 'lavender-web'})] hover:bg-[var(--${hoverBgColor || 'pigment-green'})] text-[var(--${textColor || 'black'})] hover:text-[var(--${hoverTextColor || 'white'})] py-2 px-4 rounded ${className}`}
-            style={style}
+            className={`bg-secondary hover:bg-light-secondary text-dark hover:text-white py-2 px-4 rounded-lg border-dark hover:border-light w-auto ${className}`}
+            style={{
+                minWidth: 120,
+                minHeight: 40,
+                ...style,
+            }}
             onClick={onClick}
+            disabled={disabled}
             {...props}
         >
             {children}

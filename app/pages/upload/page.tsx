@@ -11,6 +11,11 @@ const UploadPage = () => {
   interface ImageDisplayProps {
     image: File;
   }
+
+  const handleImageSubmit = (image: File) => {
+    setFiles(files.filter((file) => file !== image));
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles: File[]) => {
       setFiles(acceptedFiles);
@@ -32,7 +37,7 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="mx-auto p-4">
       <h1 className="text-3xl font-bold">Upload Images</h1>
       <div {...getRootProps()} className="bg-gray-100 p-4 rounded-md">
         <input {...getInputProps()} />
@@ -50,11 +55,11 @@ const UploadPage = () => {
                 setCurrentIndex(currentIndex - 1);
               }
             }}
-            className="mr-4"
+
           >
             Previous
           </Button>
-          <ImageDisplay image={files[currentIndex]} />
+          <ImageDisplay image={files[currentIndex]} onImageSubmit={handleImageSubmit} />
           <Button
             onClick={() => {
               if (currentIndex === files.length - 1) {
@@ -63,7 +68,7 @@ const UploadPage = () => {
                 setCurrentIndex(Math.min(files.length - 1, currentIndex + 1));
               }
             }}
-            className={`bg-[var(--lavender-web)] hover:bg-[var(--pigment-green)] text-[var(--black)] hover:text-[var(--white)] py-2 px-4 rounded ml-4`}
+
           >
             Next
           </Button>

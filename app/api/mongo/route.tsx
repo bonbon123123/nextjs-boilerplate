@@ -16,10 +16,10 @@ export async function POST(req: Request) {
     await dbConnect();
 
     try {
-        const data = await req.json(); // Pobranie danych z żądania
-        const newPost = new Post(data); // Utworzenie nowego dokumentu Post
+        const data = await req.json(); 
+        const newPost = new Post(data); 
 
-        await newPost.save(); // Zapisanie dokumentu w MongoDB
+        await newPost.save(); 
 
         return new NextResponse(JSON.stringify(newPost), { status: 201 });
     } catch (error) {

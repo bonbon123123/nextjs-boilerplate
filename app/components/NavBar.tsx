@@ -2,10 +2,19 @@ import Link from "next/link";
 
 export default function NavBar() {
     return (
-        <nav className="flex space-x-4 p-4 bg-gray-200">
-            <Link href="/pages/upload" className="text-blue-600 hover:text-blue-800">Upload
+        <nav className="flex h-12 bg-main">
+            <Link
+                href="/pages/upload"
+                className="h-full text-lg text-light hover:text-white px-4 py-2 hover:bg-light-main min-w-[100px] text-center"
+            >
+                Upload
             </Link>
-            <Link href="/pages/search" className="text-blue-600 hover:text-blue-800">Search
+            <div className="h-full w-px bg-main" /> {/* separator */}
+            <Link
+                href="/pages/search"
+                className="h-full text-lg text-light hover:text-white px-4 py-2 hover:bg-light-main min-w-[100px] text-center"
+            >
+                Search
             </Link>
         </nav>
     );
