@@ -1,15 +1,76 @@
-import Image from "next/image";
-import { createUploadthing, type FileRouter } from "uploadthing/next";
-import ImageUpload from "../../components/image_upload";
-import { DropImageUploader } from "../../components/image_dropzone";
-const f = createUploadthing();
+"use client";
+import { useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import ImageDisplay from '../../components/ImageDisplay';
+import Button from '../../components/Button';
 
 
-export default function uploadPage() {
+const UploadPage = () => {
+  const [files, setFiles] = useState<File[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  interface ImageDisplayProps {
+    image: File;
+  }
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (acceptedFiles: File[]) => {
+      setFiles(acceptedFiles);
+    },
+    accept: { mimeTypes: ['image/*'] },
+    multiple: true,
+  });
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'ArrowLeft') {
+      setCurrentIndex(Math.max(0, currentIndex - 1));
+    } else if (event.key === 'ArrowRight') {
+      if (currentIndex === files.length - 1) {
+        setCurrentIndex(0);
+      } else {
+        setCurrentIndex(Math.min(files.length - 1, currentIndex + 1));
+      }
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1>Main2</h1>
-      <DropImageUploader />
-    </main>
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold">Upload Images</h1>
+      <div {...getRootProps()} className="bg-gray-100 p-4 rounded-md">
+        <input {...getInputProps()} />
+        {
+          isDragActive ? <p>Drop the files here ...</p> : <p>Drag and drop files here, or click to select files</p>
+        }
+      </div>
+      {files.length > 0 && (
+        <div className="flex justify-center mt-4">
+          <Button
+            onClick={() => {
+              if (currentIndex === 0) {
+                setCurrentIndex(files.length - 1);
+              } else {
+                setCurrentIndex(currentIndex - 1);
+              }
+            }}
+            className="mr-4"
+          >
+            Previous
+          </Button>
+          <ImageDisplay image={files[currentIndex]} />
+          <Button
+            onClick={() => {
+              if (currentIndex === files.length - 1) {
+                setCurrentIndex(0);
+              } else {
+                setCurrentIndex(Math.min(files.length - 1, currentIndex + 1));
+              }
+            }}
+            className={`bg-[var(--lavender-web)] hover:bg-[var(--pigment-green)] text-[var(--black)] hover:text-[var(--white)] py-2 px-4 rounded ml-4`}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+    </div>
   );
-}
+};
+
+export default UploadPage;

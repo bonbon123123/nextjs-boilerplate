@@ -6,7 +6,7 @@ const f = createUploadthing();
 const auth = (req: Request) => ({ id: "fakeId" });
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
-    imageUploader: f({ image: { maxFileSize: "4MB" } })
+    imageUploader: f({ image: { maxFileSize: "8MB" } })
         // Set permissions and file types for this FileRoute
         .middleware(async ({ req }) => {
             // This code runs on your server before upload
