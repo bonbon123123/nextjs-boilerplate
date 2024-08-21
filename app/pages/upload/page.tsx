@@ -38,7 +38,7 @@ const UploadPage = () => {
 
   return (
     <div className="mx-auto p-4">
-      <h1 className="text-3xl font-bold">Upload Images</h1>
+      <h1 className="containerds text-3xl font-bold">Upload Images</h1>
       <div {...getRootProps()} className="bg-gray-100 p-4 rounded-md">
         <input {...getInputProps()} />
         {

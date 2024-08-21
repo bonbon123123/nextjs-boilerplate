@@ -20,10 +20,10 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
         const trimmedNewTag = newTag.trim();
         const existingImageWithTag = imagesWithTag.find((img) => img.image === image);
         if (existingImageWithTag) {
-            existingImageWithTag.tags.push(`#${trimmedNewTag}`);
+            existingImageWithTag.tags.push(trimmedNewTag);
             setImagesWithTag([...imagesWithTag]);
         } else {
-            setImagesWithTag([...imagesWithTag, { image, tags: [`#${trimmedNewTag}`] }]);
+            setImagesWithTag([...imagesWithTag, { image, tags: [trimmedNewTag] }]);
         }
         setNewTag('');
     };
@@ -83,7 +83,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
                             key={index}
                             className="bg-secondary p-1 h-[80%] rounded-lg mr-2.5"
                         >
-                            {tag}
+                            {"#"}{tag}
                         </span>
                     ))}
                 </div>
