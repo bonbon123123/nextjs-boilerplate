@@ -37,3 +37,59 @@ export async function POST(req: Request) {
         return new NextResponse(JSON.stringify({ message: 'Error adding post', error }), { status: 500 });
     }
 }
+
+export async function PATCH(req: Request) {
+    await dbConnect();
+    console.log("patch1")
+    try {
+        const data = await req.json();
+        const postId = data._id;
+
+        if (!postId) {
+            return new NextResponse(JSON.stringify({ message: 'Invalid request' }), { status: 400 });
+        }
+
+        const post = await Post.findById(postId);
+
+
+        if (!post) {
+            return new NextResponse(JSON.stringify({ message: 'Post not found' }), { status: 404 });
+        } else {
+            console.log("patch")
+            console.log(post)
+        }
+
+        if (data.vote !== undefined) {
+            switch (data.vote) {
+                case -2:
+                    post.downvotes += 1;
+                    post.upvotes -= 1;
+                    break;
+                case -1:
+                    post.downvotes += 1;
+                    break;
+                case 1:
+                    post.upvotes += 1;
+                    break;
+                case 2:
+                    post.upvotes += 1;
+                    post.downvotes -= 1;
+                    break;
+                default:
+                    console.log(`Invalid vote value: ${data.vote}`);
+                    break;
+            }
+        }
+
+        if (data.tags !== undefined) {
+            post.tags = data.tags;
+        }
+
+        await post.save();
+
+        return new NextResponse(JSON.stringify(post), { status: 200 });
+    } catch (error) {
+        console.error('Error updating post:', error);
+        return new NextResponse(JSON.stringify({ message: 'Error updating post', error }), { status: 500 });
+    }
+}
