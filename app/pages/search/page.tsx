@@ -35,7 +35,7 @@ const SearchPage = () => {
 
     const fetchImages = async () => {
         setLoading(true);
-        const response = await fetch(`/api/mongo?tags=${tags}`);
+        const response = await fetch(`/api/mongo/posts?tags=${tags}`);
         const data = await response.json();
         setImages(data);
         setLoading(false);

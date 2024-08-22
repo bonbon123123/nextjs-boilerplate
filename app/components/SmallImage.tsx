@@ -67,7 +67,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
 
 
         console.log('Change vote in DB function called!');
-        fetch('/api/mongo', {
+        fetch('/api/mongo/posts', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -119,6 +119,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
             <div
                 className="absolute bottom-0 left-0 w-[100%] h-[20%] bg-gradient-to-b from-transparent to-light-main"
                 style={{ zIndex: 90 }}
+
             />
             <div
                 className="absolute bottom-0 left-0 w-[100%] rounded-lg flex center flex-col justify-center items-center"

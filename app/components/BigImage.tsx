@@ -61,7 +61,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
 
     const changeVoteInDb = (voteValue: number) => {
         console.log('Change vote in DB function called!');
-        fetch('/api/mongo', {
+        fetch('/api/mongo/posts', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 style={{ backgroundColor: 'white' }}
             >
                 <img
-                    src={imageUrl}
+                    src={image.url}
                     onError={handleImageError}
                     onLoad={handleImageLoad}
                     className="w-full h-full object-cover"
@@ -115,11 +115,18 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 />
             </div>
             <div
-                className="bg-secondary w-1/5 h-full overflow-y-auto flex flex-col justify-end items-center"
+                className="bg-main w-1/5 h-full overflow-y-auto flex flex-col justify-start items-center"
 
             >
-                {/* content 3 */}
-                <div className="w-full flex flex-row justify-end items-center mb-2">
+                <div
+                    className="w-full top-0 right-0 p-1 flex justify-end items-end"
+                    style={{ zIndex: 1001 }}
+                >
+                    <Button onClick={onClose}>
+                        ×
+                    </Button>
+                </div>
+                <div className="bg-light-main w-full flex flex-row justify-center items-center mb-2">
                     {image.tags.map((tag, index) => (
                         <span
                             key={index}
@@ -129,13 +136,24 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                         </span>
                     ))}
                 </div>
-                <Button onClick={handleUpvote} className={upActive ? 'bg-light-secondary' : ''}>
-                    Up
-                </Button>
-                <span className="mx-2">{image.upvotes - image.downvotes + vote}</span>
-                <Button onClick={handleDownvote} className={downActive ? 'bg-light-secondary' : ''}>
-                    Down
-                </Button>
+                <div className="flex flex-row justify-between w-[100%]">
+                    <div className="flex justify-start">
+                        <Button onClick={handleUpvote} className={upActive ? 'bg-light-secondary' : ''}>
+                            Comment
+                        </Button>
+                    </div>
+                    <div className="flex justify-end items-center">
+                        <div className="flex flex-row items-center">
+                            <Button onClick={handleUpvote} className={upActive ? 'bg-light-secondary' : ''}>
+                                Up
+                            </Button>
+                            <Button onClick={handleDownvote} className={downActive ? 'bg-light-secondary' : ''}>
+                                Down
+                            </Button>
+                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div
                 className=" h-full overflow-y-auto flex flex-col justify-center items-center"
@@ -143,14 +161,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
             >
                 {/* Add comments section here */}
             </div>
-            <div
-                className="absolute top-0 right-0 p-2"
-                style={{ zIndex: 1001 }}
-            >
-                <Button onClick={onClose}>
-                    ×
-                </Button>
-            </div>
+
         </div>
     );
 };
