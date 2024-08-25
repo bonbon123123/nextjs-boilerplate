@@ -36,7 +36,7 @@ export async function POST(req: Request) {
             Type: response[0].data?.type,
         };
         try {
-            const url = new URL('/api/mongo', req.url);
+            const url = new URL('/api/mongo/posts', req.url);
             const responseMongo = await fetch(url, {
                 method: 'POST',
                 headers: {

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from './Button';
+import CommentSection from './CommentSection';
+import CommentForm from './CommentForm';
 
 interface Props {
     image: {
@@ -24,6 +26,16 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     const [vote, setVote] = useState(0);
     const [upActive, setUpActive] = useState(false);
     const [downActive, setDownActive] = useState(false);
+    const [showCommentForm, setShowCommentForm] = useState(false);
+
+    const handleCommentOn = () => {
+        setShowCommentForm(!showCommentForm);
+        console.log(image._id)
+    };
+
+    const handleCommentOff = () => {
+        setShowCommentForm(true);
+    };
 
     const handleUpvote = () => {
         if (upActive) {
@@ -138,7 +150,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 </div>
                 <div className="flex flex-row justify-between w-[100%]">
                     <div className="flex justify-start">
-                        <Button onClick={handleUpvote} className={upActive ? 'bg-light-secondary' : ''}>
+                        <Button onClick={handleCommentOn} className={upActive ? 'bg-light-secondary' : ''}>
                             Comment
                         </Button>
                     </div>
@@ -154,13 +166,19 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                         </div>
                     </div>
                 </div>
+
+                {showCommentForm && (
+                    <div
+                        className=" h-[200px] bg-slate-500 "
+                    >
+                        <CommentForm image={image} />
+                    </div>
+                )}
+                <CommentSection image={image} />
+
             </div>
-            <div
-                className=" h-full overflow-y-auto flex flex-col justify-center items-center"
-                style={{ backgroundColor: 'white' }}
-            >
-                {/* Add comments section here */}
-            </div>
+
+
 
         </div>
     );

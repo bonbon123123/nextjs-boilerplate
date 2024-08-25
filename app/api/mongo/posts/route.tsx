@@ -21,10 +21,21 @@ export async function GET(req: Request) {
     }
 }
 
-
+// {
+//     "url": "https://utfs.io/f/651cbda2-dcd0-433e-bc71-ee088bfbaf28-hr7l8j.png",
+//         "tags": [],
+//             "upvotes": 0,
+//                 "downvotes": 0,
+//                     "createdAt": "2024-08-25T14:51:00.609Z",
+//                         "updatedAt": "2024-08-25T14:51:00.609Z",
+//                             "Locked": false,
+//                                 "Name": "8d3bb84.png",
+//                                     "Size": 241650,
+//                                         "Type": "image/png"
+// }
 export async function POST(req: Request) {
     await dbConnect();
-
+    console.log("asaasas")
     try {
         const data = await req.json();
         const newPost = new Post(data);

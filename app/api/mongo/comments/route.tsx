@@ -9,7 +9,7 @@ interface Comment {
     _id: string;
     postId: string;
     userId: string;
-    parentId: string | null;
+    parentId: mongoose.Types.ObjectId | null;
     text: string;
     upvotes: number;
     downvotes: number;
@@ -20,9 +20,7 @@ interface Comment {
 
 
 export async function GET(req: Request) {
-    interface CommentTree {
-        [index: number]: Comment[];
-    }
+
 
     await dbConnect();
 
@@ -32,26 +30,30 @@ export async function GET(req: Request) {
 
     if (postId) {
         const comments: Comment[] = await Comment.find({ postId }).sort({ createdAt: -1 });
-        const sortedComments: Comment[][] = [[]];
-        const commentTree: { [index: number]: Comment[] } = [];
+        console.log(comments)
+        const commentsWithParentId = comments.filter(comment => comment.parentId !== null);
+        const commentsWithoutParentId = comments.filter(comment => comment.parentId === null);
+
+        const sortedComments: Comment[][] = [];
 
 
-
-        comments.forEach((comment: Comment) => {
-            if (!comment.parentId) {
-                sortedComments.push([comment]);
-            } else {
-                const parentIndex = sortedComments.findIndex((sortedComment) => {
-                    return sortedComment[0]._id === comment.parentId;
-                });
-
-                if (parentIndex !== -1) {
-                    sortedComments[parentIndex].push(comment);
-                }
-            }
+        commentsWithoutParentId.forEach(comment => {
+            sortedComments.push([comment])
         });
+        // commentsWithParentId.forEach(commentWith => {
+        //     for (let i = 0; i < sortedComments.length; i++) {
 
-        return new NextResponse(JSON.stringify(commentTree), { status: 200 });
+        //         if (commentWith.parentId?.equals(sortedComments[i][0]._id)) {
+        //             sortedComments[i].push(commentWith)
+        //             console.log("gottem")
+        //         }
+        //     }
+        // });
+
+
+
+        console.log(sortedComments);
+        return new NextResponse(JSON.stringify(commentsWithoutParentId), { status: 200 });
     }
     else if (parentId) {
         const comments = await Comment.find({ parentId }).sort({ createdAt: -1 }).lean();
@@ -74,13 +76,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     await dbConnect();
-
+    console.log("postujesz komentarz")
     try {
         const data = await req.json();
-        console.log('JSON payload:', data); // Log the JSON payload being sent to the server
+        console.log('JSON payload:', data);
         data.userId = new mongoose.Types.ObjectId(data.userId);
         const newComment = new Comment(data);
-
+        console.log(newComment)
         await newComment.save();
 
         return new NextResponse(JSON.stringify(newComment), { status: 201 });

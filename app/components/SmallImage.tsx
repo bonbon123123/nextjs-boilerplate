@@ -92,8 +92,8 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
         setImageLoaded(true);
     };
     if (image.upvotes != 0) {
-        console.log(image.tags)
-        console.log(image.upvotes - image.downvotes)
+        // console.log(image.tags)
+        // console.log(image.upvotes - image.downvotes)
     }
 
     return (
@@ -126,7 +126,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 style={{ zIndex: 100 }}
             >
                 <div className="w-[100%]  flex flex-row justify-center items-center mb-2">
-                    {image.tags.map((tag, index) => {
+                    {image.tags?.map((tag, index) => {
                         return (
                             <span
                                 key={index}
