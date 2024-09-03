@@ -1,3 +1,4 @@
+'use client';
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { DropImageUploader } from "./components/image_dropzone";
 import { useContext, useState, useEffect } from "react";
