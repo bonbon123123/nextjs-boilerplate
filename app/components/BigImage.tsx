@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Button from './Button';
 import CommentSection from './CommentSection';
 import CommentForm from './CommentForm';
+import { SessionContext } from '../invisibleComponents/SessionProvider';
 
 interface Props {
     image: {
@@ -24,9 +25,51 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     const [imageUrl, setImageUrl] = useState(image.url);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [vote, setVote] = useState(0);
+    const [voteFromSesion, setVoteFromSesion] = useState(0);
     const [upActive, setUpActive] = useState(false);
     const [downActive, setDownActive] = useState(false);
     const [showCommentForm, setShowCommentForm] = useState(false);
+
+    const sessionContext = useContext(SessionContext);
+
+    if (!sessionContext) {
+        throw new Error('SessionContext is not provided');
+    }
+
+    const { addVote, getVote } = sessionContext;
+
+    useEffect(() => {
+        try {
+            const currentVote = getVote(image._id);
+            console.log('currentVote:', currentVote);
+            if (currentVote !== null && currentVote !== undefined && typeof currentVote === 'number') {
+                setVote(currentVote);
+
+                switch (currentVote) {
+                    case -1:
+                        setUpActive(false);
+                        setDownActive(true);
+                        setVoteFromSesion(1);
+                        break;
+                    case 1:
+                        setUpActive(true);
+                        setDownActive(false);
+                        setVoteFromSesion(-1);
+                        break;
+                    default:
+                        setUpActive(false);
+                        setDownActive(false);
+                        setVoteFromSesion(0);
+                        break;
+                }
+                console.log(currentVote)
+            } else {
+                //console.error('Błąd: currentVote nie jest liczbą');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }, [image._id]);
 
     const handleCommentOn = () => {
         setShowCommentForm(!showCommentForm);
@@ -72,6 +115,8 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     };
 
     const changeVoteInDb = (voteValue: number) => {
+
+
         console.log('Change vote in DB function called!');
         fetch('/api/mongo/posts', {
             method: 'PATCH',
@@ -84,10 +129,14 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 if (!response.ok) {
                     throw new Error(`Error updating vote: ${response.status}`);
                 }
+                else {
+                    addVote(image._id, voteValue + vote);
+                }
                 return response.text();
             })
             .then(data => console.log(data))
             .catch(error => console.error(error));
+
     };
 
     const handleImageError = () => {
@@ -162,7 +211,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                             <Button onClick={handleDownvote} className={downActive ? 'bg-light-secondary' : ''}>
                                 Down
                             </Button>
-                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote}</span>
+                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote + voteFromSesion}</span>
                         </div>
                     </div>
                 </div>

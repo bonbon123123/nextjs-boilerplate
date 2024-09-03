@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@uploadthing/react": "^6.7.2",
+    "bcrypt": "^5.1.1",
+    "cookie": "^0.6.0",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "3.6",
     "mongoose": "^8.5.3",
     "multer": "^1.4.5-lts.1",
@@ -18,14 +21,19 @@
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
     "svelte": "^4.2.18",
-    "uploadthing": "^6.13.2"
+    "uploadthing": "^6.13.2",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie": "^0.6.0",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/multer": "^1.4.11",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-dropzone": "^5.1.0",
+    "@types/uuid": "^10.0.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",

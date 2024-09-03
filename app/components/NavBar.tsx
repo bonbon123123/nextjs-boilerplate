@@ -4,6 +4,12 @@ export default function NavBar() {
     return (
         <nav className="flex h-12 bg-main">
             <Link
+                href="/"
+                className="h-full text-lg text-light hover:text-white px-4 py-2 hover:bg-light-main min-w-[100px] text-center"
+            >
+                Specs
+            </Link>
+            <Link
                 href="/pages/upload"
                 className="h-full text-lg text-light hover:text-white px-4 py-2 hover:bg-light-main min-w-[100px] text-center"
             >
