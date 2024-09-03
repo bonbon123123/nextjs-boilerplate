@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from './Button';
-
+import Image from 'next/image';
 
 interface ImageDisplayProps {
     image: File;
@@ -65,7 +65,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
             <div
                 className="w-[100%] h-[85%] flex center justify-center items-center"
             >
-                <img
+                <Image
                     src={URL.createObjectURL(image)}
                     alt={image.name}
                     className="max-w-[100%] max-h-[100%] object-contain"
