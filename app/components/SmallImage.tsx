@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Button from './Button';
 import { SessionContext } from '../invisibleComponents/SessionProvider';
+import Image from 'next/image';
 
 interface Props {
     image: {
@@ -68,6 +69,10 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
             console.error(error);
         }
     }, [image._id]);
+
+    useEffect(() => {
+        
+    }, [getVote]);
 
     const handleUpvote = () => {
         if (upActive) {
@@ -150,8 +155,9 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 maxHeight: 'calc(100vw / 2)',
             }}
         >
-            <img
+            <Image 
                 src={image.url}
+                alt={""}
                 onError={handleImageError}
                 onLoad={handleImageLoad}
                 className="w-full object-cover"

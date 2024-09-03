@@ -3,6 +3,7 @@ import Button from './Button';
 import CommentSection from './CommentSection';
 import CommentForm from './CommentForm';
 import { SessionContext } from '../invisibleComponents/SessionProvider';
+import Image from 'next/image';
 
 interface Props {
     image: {
@@ -70,6 +71,10 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
             console.error(error);
         }
     }, [image._id]);
+
+    useEffect(() => {
+        // 
+    }, [getVote]);
 
     const handleCommentOn = () => {
         setShowCommentForm(!showCommentForm);
@@ -162,7 +167,8 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 className="w-3/5 h-full overflow-y-auto flex flex-col justify-center items-center bg-main"
                 style={{ backgroundColor: 'white' }}
             >
-                <img
+                <Image
+                    alt={""}
                     src={image.url}
                     onError={handleImageError}
                     onLoad={handleImageLoad}
