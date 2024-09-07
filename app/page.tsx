@@ -1,10 +1,11 @@
-'use client';
+"use client";
+import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { DropImageUploader } from "./components/image_dropzone";
 import { useContext, useState, useEffect } from "react";
 import { SessionContext } from "./invisibleComponents/SessionProvider";
+const f = createUploadthing();
 
-
-export default function SpecsPage() {
+export default function MainPage() {
   const { sessionId, user } = useContext(SessionContext) || {};
   const [votes, setVotes] = useState<{ [id: string]: number }>({});
 

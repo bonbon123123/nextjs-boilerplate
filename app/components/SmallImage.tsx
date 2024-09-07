@@ -72,10 +72,6 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
         }
     }, [image._id]);
 
-    useEffect(() => {
-        
-    }, [getVote]);
-
     const handleUpvote = () => {
         if (upActive) {
             setUpActive(false);
@@ -157,13 +153,11 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 maxHeight: 'calc(100vw / 2)',
             }}
         >
-
             <Image
-                alt={"Small image"}
+                alt={"Big image"}
                 width={image.width}
                 height={image.height}
                 src={image.url}
-                alt={""}
                 onError={handleImageError}
                 onLoad={handleImageLoad}
                 className="w-full object-cover"

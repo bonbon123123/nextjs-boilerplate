@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import ImageDisplay from '../../components/ImageDisplay';
 import Button from '../../components/Button';
-import ImageUpload from '@/app/components/image_upload';
+
 
 const UploadPage = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -45,7 +45,6 @@ const UploadPage = () => {
           isDragActive ? <p>Drop the files here ...</p> : <p>Drag and drop files here, or click to select files</p>
         }
       </div>
-      <ImageUpload />
       {files.length > 0 && (
         <div className="flex justify-center mt-4">
           <Button

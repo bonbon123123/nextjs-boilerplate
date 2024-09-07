@@ -74,10 +74,6 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
         }
     }, [image._id]);
 
-    useEffect(() => {
-        // 
-    }, [getVote]);
-
     const handleCommentOn = () => {
         setShowCommentForm(!showCommentForm);
         console.log(image._id)
