@@ -69,6 +69,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
         }
     }, [image._id]);
 
+
     const handleUpvote = () => {
         if (upActive) {
             setUpActive(false);

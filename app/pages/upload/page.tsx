@@ -4,7 +4,6 @@ import { useDropzone } from 'react-dropzone';
 import ImageDisplay from '../../components/ImageDisplay';
 import Button from '../../components/Button';
 
-
 const UploadPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -12,9 +11,6 @@ const UploadPage = () => {
     image: File;
   }
 
-  const handleImageSubmit = (image: File) => {
-    setFiles(files.filter((file) => file !== image));
-  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles: File[]) => {
@@ -45,6 +41,7 @@ const UploadPage = () => {
           isDragActive ? <p>Drop the files here ...</p> : <p>Drag and drop files here, or click to select files</p>
         }
       </div>
+
       {files.length > 0 && (
         <div className="flex justify-center mt-4">
           <Button
@@ -59,7 +56,7 @@ const UploadPage = () => {
           >
             Previous
           </Button>
-          <ImageDisplay image={files[currentIndex]} onImageSubmit={handleImageSubmit} />
+
           <Button
             onClick={() => {
               if (currentIndex === files.length - 1) {
