@@ -23,23 +23,27 @@ export async function GET(req: Request) {
 
 // {
 //     "url": "https://utfs.io/f/651cbda2-dcd0-433e-bc71-ee088bfbaf28-hr7l8j.png",
-//         "tags": [],
-//             "upvotes": 0,
-//                 "downvotes": 0,
-//                     "createdAt": "2024-08-25T14:51:00.609Z",
-//                         "updatedAt": "2024-08-25T14:51:00.609Z",
-//                             "Locked": false,
-//                                 "Name": "8d3bb84.png",
-//                                     "Size": 241650,
-//                                         "Type": "image/png"
+//     "tags": [],
+//     "upvotes": 0,
+//     "downvotes": 0,
+//     "createdAt": "2024-08-25T14:51:00.609Z",
+//     "updatedAt": "2024-08-25T14:51:00.609Z",
+//     "Locked": false,
+//     "Name": "8d3bb84.png",
+//     "Size": 241650,
+//     "Type": "image/png"
+//     "width": 100,
+//     "height": 100
 // }
+
 export async function POST(req: Request) {
     await dbConnect();
-    console.log("asaasas")
     try {
         const data = await req.json();
+        console.log("datadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadata")
+        console.log(data)
         const newPost = new Post(data);
-
+        console.log(newPost)
         await newPost.save();
 
         return new NextResponse(JSON.stringify(newPost), { status: 201 });

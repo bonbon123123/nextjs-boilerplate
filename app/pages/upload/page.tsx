@@ -56,7 +56,6 @@ const UploadPage = () => {
                 setCurrentIndex(currentIndex - 1);
               }
             }}
-
           >
             Previous
           </Button>

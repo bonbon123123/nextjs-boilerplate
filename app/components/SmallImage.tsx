@@ -5,17 +5,19 @@ import Image from 'next/image';
 
 interface Props {
     image: {
-        url: string,
-        tags: Array<string>,
-        upvotes: number,
-        downvotes: number,
-        createdAt: Date,
-        updatedAt: Date,
-        Locked: Boolean,
-        Name: string,
-        Size: number,
-        Type: string,
-        _id: string
+        url: string;
+        tags: Array<string>;
+        upvotes: number;
+        downvotes: number;
+        createdAt: Date;
+        updatedAt: Date;
+        width: number;
+        height: number;
+        locked: Boolean;
+        name: string;
+        size: number;
+        type: string;
+        _id: string;
     };
     onClick?: () => void;
 }
@@ -155,7 +157,11 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 maxHeight: 'calc(100vw / 2)',
             }}
         >
-            <Image 
+
+            <Image
+                alt={"Small image"}
+                width={image.width}
+                height={image.height}
                 src={image.url}
                 alt={""}
                 onError={handleImageError}
