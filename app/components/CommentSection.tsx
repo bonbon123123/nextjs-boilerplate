@@ -21,10 +21,12 @@ interface Props {
         downvotes: number;
         createdAt: Date;
         updatedAt: Date;
-        Locked: Boolean;
-        Name: string;
-        Size: number;
-        Type: string;
+        width: number;
+        height: number;
+        locked: Boolean;
+        name: string;
+        size: number;
+        type: string;
         _id: string;
     };
 }

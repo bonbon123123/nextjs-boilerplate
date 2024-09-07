@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Button from './Button';
 import { SessionContext } from '../invisibleComponents/SessionProvider';
+import Image from 'next/image';
 
 interface Props {
     image: {
-        url: string,
-        tags: Array<string>,
-        upvotes: number,
-        downvotes: number,
-        createdAt: Date,
-        updatedAt: Date,
-        Locked: Boolean,
-        Name: string,
-        Size: number,
-        Type: string,
-        _id: string
+        url: string;
+        tags: Array<string>;
+        upvotes: number;
+        downvotes: number;
+        createdAt: Date;
+        updatedAt: Date;
+        width: number;
+        height: number;
+        locked: Boolean;
+        name: string;
+        size: number;
+        type: string;
+        _id: string;
     };
     onClick?: () => void;
 }
@@ -150,7 +153,10 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 maxHeight: 'calc(100vw / 2)',
             }}
         >
-            <img
+            <Image
+                alt={"Big image"}
+                width={image.width}
+                height={image.height}
                 src={image.url}
                 onError={handleImageError}
                 onLoad={handleImageLoad}

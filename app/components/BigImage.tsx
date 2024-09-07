@@ -3,6 +3,7 @@ import Button from './Button';
 import CommentSection from './CommentSection';
 import CommentForm from './CommentForm';
 import { SessionContext } from '../invisibleComponents/SessionProvider';
+import Image from 'next/image';
 
 interface Props {
     image: {
@@ -12,10 +13,12 @@ interface Props {
         downvotes: number;
         createdAt: Date;
         updatedAt: Date;
-        Locked: Boolean;
-        Name: string;
-        Size: number;
-        Type: string;
+        width:number;
+        height:number;
+        locked: Boolean;
+        name: string;
+        size: number;
+        type: string;
         _id: string;
     };
     onClose?: () => void;
@@ -162,7 +165,10 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 className="w-3/5 h-full overflow-y-auto flex flex-col justify-center items-center bg-main"
                 style={{ backgroundColor: 'white' }}
             >
-                <img
+                <Image
+                    alt={"Big image"}
+                    width={image.width}
+                    height={image.height}
                     src={image.url}
                     onError={handleImageError}
                     onLoad={handleImageLoad}

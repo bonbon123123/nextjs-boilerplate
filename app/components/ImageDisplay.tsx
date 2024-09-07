@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from './Button';
-
+import Image from 'next/image';
 
 interface ImageDisplayProps {
     image: File;
@@ -10,11 +10,30 @@ interface ImageDisplayProps {
 interface ImageWithTag {
     image: File;
     tags: string[];
+    width: number;
+    height: number;
 }
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => {
     const [imagesWithTag, setImagesWithTag] = useState<ImageWithTag[]>([]);
     const [newTag, setNewTag] = useState<string>('');
+    const [imageWidth, setImageWidth] = useState<number>(0);
+    const [imageHeight, setImageHeight] = useState<number>(0);
+
+    useEffect(() => {
+        const img = document.createElement('img');
+        img.onload = () => {
+            setImageWidth(img.width);
+            setImageHeight(img.height);
+            const existingImageWithTag = imagesWithTag.find((img) => img.image === image);
+            if (existingImageWithTag) {
+                existingImageWithTag.width = img.width;
+                existingImageWithTag.height = img.height;
+                setImagesWithTag([...imagesWithTag]);
+            }
+        };
+        img.src = URL.createObjectURL(image);
+    }, [image, imagesWithTag]);
 
     const handleAddTag = (image: File) => {
         const trimmedNewTag = newTag.trim();
@@ -23,7 +42,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
             existingImageWithTag.tags.push(trimmedNewTag);
             setImagesWithTag([...imagesWithTag]);
         } else {
-            setImagesWithTag([...imagesWithTag, { image, tags: [trimmedNewTag] }]);
+            setImagesWithTag([...imagesWithTag, { image, tags: [trimmedNewTag], width: 0, height: 0 }]);
         }
         setNewTag('');
     };
@@ -35,6 +54,10 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
     const handleSubmit = async () => {
         const formData = new FormData();
         formData.append('files', image);
+        if (imageWithTag) {
+            formData.append('width', imageWithTag.width.toString());
+            formData.append('height', imageWithTag.height.toString());
+        }
         const tags = imagesWithTag.find((img) => img.image === image)?.tags || [];
         formData.append('tags', JSON.stringify(tags));
 
@@ -65,8 +88,10 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
             <div
                 className="w-[100%] h-[85%] flex center justify-center items-center"
             >
-                <img
+                <Image
                     src={URL.createObjectURL(image)}
+                    width={imageWidth}
+                    height={imageHeight}
                     alt={image.name}
                     className="max-w-[100%] max-h-[100%] object-contain"
                 />

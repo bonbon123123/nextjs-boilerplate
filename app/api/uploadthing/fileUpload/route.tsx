@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();
-        console.log(formData);
+        //console.log(formData);
         if (!formData) {
             throw new Error("FormData is required");
         }
@@ -20,9 +20,16 @@ export async function POST(req: Request) {
 
         const files = formData.getAll("files").filter((value): value is File => value instanceof File);
         const response = await utapi.uploadFiles(files);
-        console.log(tags)
-        console.log(tags[0])
 
+        const width = formData.get('width') !== null ? parseInt(formData.get('width') as string, 10) : 0;
+        if (isNaN(width)) {
+            throw new Error("Invalid width value");
+        }
+
+        const height = formData.get('height') !== null ? parseInt(formData.get('height') as string, 10) : 0;
+        if (isNaN(height)) {
+            throw new Error("Invalid height value");
+        }
         const post = {
             url: response[0].data?.url,
             tags: tags[0],
@@ -30,10 +37,12 @@ export async function POST(req: Request) {
             downvotes: 0,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            Locked: false,
-            Name: response[0].data?.name,
-            Size: response[0].data?.size,
-            Type: response[0].data?.type,
+            width: width,
+            height: height,
+            locked: false,
+            name: response[0].data?.name,
+            size: response[0].data?.size,
+            type: response[0].data?.type
         };
         try {
             const url = new URL('/api/mongo/posts', req.url);
