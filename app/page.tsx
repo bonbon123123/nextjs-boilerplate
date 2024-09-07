@@ -5,6 +5,7 @@ import { useContext, useState, useEffect } from "react";
 import { SessionContext } from "./invisibleComponents/SessionProvider";
 const f = createUploadthing();
 
+
 export default function MainPage() {
   const { sessionId, user } = useContext(SessionContext) || {};
   const [votes, setVotes] = useState<{ [id: string]: number }>({});
