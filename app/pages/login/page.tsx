@@ -12,11 +12,16 @@ interface Post {
     downvotes: number;
     createdAt: Date;
     updatedAt: Date;
-    Locked: Boolean;
+    locked: Boolean;
     Name: string;
     Size: number;
     Type: string;
     _id: string;
+    width: number;
+    height: number;
+    name: string;
+    size: number;
+    type: string;
 }
 
 const SearchPage = () => {

@@ -12,11 +12,16 @@ interface Post {
     downvotes: number;
     createdAt: Date;
     updatedAt: Date;
-    Locked: Boolean;
+    locked: Boolean;
     Name: string;
     Size: number;
     Type: string;
     _id: string;
+    width: number;
+    height: number;
+    name: string;
+    size: number;
+    type: string;
 }
 
 const SearchPage = () => {
@@ -83,11 +88,11 @@ const SearchPage = () => {
                     <p>Loading...</p>
                 ) : (
 
-                    columns.map((column, columnIndex) => (
-                        <div key={columnIndex} className="w-1/4">
-                            {column.map((image, imageIndex) => (
+                    columns.map((column, index) => (
+                        <div key={index} className="w-1/4">
+                            {column.map((image) => (
                                 <SmallImage
-                                    key={imageIndex}
+                                    key={image.id}
                                     image={image}
                                     onClick={() => handleImageClick(image)}
                                 />
