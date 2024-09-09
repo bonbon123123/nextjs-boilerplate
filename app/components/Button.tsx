@@ -5,6 +5,7 @@ interface ButtonProps {
     onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
     className?: string;
     style?: React.CSSProperties;
+    clicked?: boolean;
     disabled?: boolean;
 }
 
@@ -14,11 +15,15 @@ const Button: React.FC<ButtonProps> = ({
     className,
     style,
     disabled,
+    clicked,
     ...props
 }) => {
+    const hoverClassName = clicked ? 'bg-light-secondary text-white' : '';
+    const defaultClassName = clicked ? '' : 'bg-secondary';
     return (
+
         <button
-            className={`bg-secondary hover:bg-light-secondary text-dark hover:text-white py-2 px-4 rounded-lg border-dark hover:border-light w-auto ${className}`}
+            className={`${defaultClassName} ${hoverClassName}hover:bg-light-secondary hover:text-white text-dark  py-2 px-4 rounded-lg border-dark hover:border-light w-auto ${className}`}
             style={{
                 minWidth: 120,
                 minHeight: 40,

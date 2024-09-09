@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Button from './Button';
 import Image from 'next/image';
+import { SessionContext } from '../invisibleComponents/SessionProvider';
 
 interface ImageDisplayProps {
     image: File;
@@ -19,6 +20,8 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
     const [newTag, setNewTag] = useState<string>('');
     const [imageWidth, setImageWidth] = useState<number>(0);
     const [imageHeight, setImageHeight] = useState<number>(0);
+    const { userId } = useContext(SessionContext) || {};
+
 
     useEffect(() => {
         const img = document.createElement('img');
@@ -54,9 +57,10 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
     const handleSubmit = async () => {
         const formData = new FormData();
         formData.append('files', image);
-        if (imageWithTag) {
-            formData.append('width', imageWithTag.width.toString());
-            formData.append('height', imageWithTag.height.toString());
+        formData.append('width', imageWidth.toString());
+        formData.append('height', imageHeight.toString());
+        if (userId) {
+            formData.append('userId', userId.toString());
         }
         const tags = imagesWithTag.find((img) => img.image === image)?.tags || [];
         formData.append('tags', JSON.stringify(tags));

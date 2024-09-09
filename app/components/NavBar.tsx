@@ -22,6 +22,12 @@ export default function NavBar() {
             >
                 Search
             </Link>
+            <Link
+                href="/pages/login"
+                className="h-full text-lg text-light hover:text-white px-4 py-2 hover:bg-light-main min-w-[100px] text-center"
+            >
+                Login
+            </Link>
         </nav>
     );
 }

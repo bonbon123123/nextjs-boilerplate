@@ -3,31 +3,58 @@ import User from "../models/User";
 import dbConnect from "./db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from 'uuid';
 
-export async function POST(req: Request) {
+export async function POST(req: NextResponse) {
     await dbConnect();
+    const body = await req.json();
+    const { username, password, isAnonymous } = body;
+    if (isAnonymous) {
+        const sessionId = await generateSessionId();
+        if (sessionId) {
 
-    // try {
-    //     const data = await req.json();
-    //     const user = await User.findOne({ email: data.email });
+            return NextResponse.json({ sessionId }, { status: 200 });
+        } else {
+            return NextResponse.json({ message: 'Coś poszło nie tak' }, { status: 401 });
+        }
+    } else {
+        try {
+            const user = await User.findOne({ username });
+            if (!user) {
+                return NextResponse.json({ message: 'User not found' }, { status: 404 });
+            }
 
-    //     if (!user) {
-    //         return new NextResponse(JSON.stringify({ message: 'Invalid email or password' }), { status: 401 });
-    //     }
+            const isValidPassword = await bcrypt.compare(password, user.password);
+            if (!isValidPassword) {
+                return NextResponse.json({ message: 'Invalid password' }, { status: 401 });
+            }
+            user.lastLogin = new Date();
+            await user.save();
 
-    //     const isValidPassword = await bcrypt.compare(data.password, user.password);
+            const sessionId = await generateSessionId();
+            user.sessionId = sessionId;
 
-    //     if (!isValidPassword) {
-    //         return new NextResponse(JSON.stringify({ message: 'Invalid email or password' }), { status: 401 });
-    //     }
+            await user.save();
 
-    //     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-    //         expiresIn: '1h',
-    //     });
+            const userData = {
+                sessionId,
+                userId: user._id,
+                username: user.username,
+                role: user.role,
+                votes: user.votes,
+                comments: user.comments,
+            };
+            return NextResponse.json(userData, { status: 200 });
+        } catch (error) {
+            console.error('Error logging in:', error);
+            return NextResponse.json({ message: 'Error logging in', error }, { status: 500 });
 
-    //     return new NextResponse(JSON.stringify({ token }), { status: 200 });
-    // } catch (error) {
-    //     console.error('Error logging in:', error);
-    //     return new NextResponse(JSON.stringify({ message: 'Error logging in', error }), { status: 500 });
-    // }
+        }
+    }
+
+}
+
+async function generateSessionId() {
+    const sessionId = await uuidv4();
+    return sessionId;
 }

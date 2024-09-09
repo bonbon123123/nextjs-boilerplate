@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const PostSchema = new mongoose.Schema({
+    userId: String,
     url: String,
     tags: Array,
     upvotes: Number,

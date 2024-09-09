@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
     createdAt: Date,
     updatedAt: Date,
     lastLogin: Date,
+    sessionId: String,
     isActive: Boolean,
     isVerified: Boolean,
     votes: [

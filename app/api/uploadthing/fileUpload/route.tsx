@@ -6,7 +6,6 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();
-        //console.log(formData);
         if (!formData) {
             throw new Error("FormData is required");
         }
@@ -30,7 +29,11 @@ export async function POST(req: Request) {
         if (isNaN(height)) {
             throw new Error("Invalid height value");
         }
+        const userId = formData.get('userId');
+        console.log(userId);
+
         const post = {
+            userId: userId,
             url: response[0].data?.url,
             tags: tags[0],
             upvotes: 0,

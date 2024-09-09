@@ -40,10 +40,7 @@ export async function POST(req: Request) {
     await dbConnect();
     try {
         const data = await req.json();
-        console.log("datadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadata")
-        console.log(data)
         const newPost = new Post(data);
-        console.log(newPost)
         await newPost.save();
 
         return new NextResponse(JSON.stringify(newPost), { status: 201 });

@@ -1,115 +1,45 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import SmallImage from '../../components/SmallImage';
-import BigImage from '../../components/BigImage';
+import { useState, useContext } from 'react';
+import { SessionContext } from '@/app/invisibleComponents/SessionProvider';
 
-interface Post {
-    id: number;
-    title: string;
-    url: string;
-    tags: Array<string>;
-    upvotes: number;
-    downvotes: number;
-    createdAt: Date;
-    updatedAt: Date;
-    locked: Boolean;
-    Name: string;
-    Size: number;
-    Type: string;
-    _id: string;
-    width: number;
-    height: number;
-    name: string;
-    size: number;
-    type: string;
-}
+const LoginPage = () => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const session = useContext(SessionContext);
 
-const SearchPage = () => {
-    const [tags, setTags] = useState("");
-    const [images, setImages] = useState<Post[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [columns, setColumns] = useState<Post[][]>([]);
-    const [selectedImage, setSelectedImage] = useState<Post | null>(null);
-    const [showBigImage, setIsBigImageVisible] = useState(false);
+    if (!session) {
+        throw new Error('Brak dostępu do kontekstu sesji');
+    }
 
-
-
-    useEffect(() => {
-        fetchImages();
-    }, []);
-
-    const fetchImages = async () => {
-        setLoading(true);
-        const response = await fetch(`/api/mongo/posts?tags=${tags}`);
-        const data = await response.json();
-        setImages(data);
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        if (images.length > 0) {
-            const columns: Post[][] = [];
-            for (let i = 0; i < 4; i++) {
-                columns.push([]);
-            }
-            images.forEach((image, index) => {
-                columns[index % 4].push(image);
-            });
-            setColumns(columns);
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        try {
+            await session.login(username, password);
+        } catch (error) {
+            setError('Błąd logowania');
         }
-    }, [images]);
-
-    const handleSearch = () => {
-        fetchImages();
-    };
-
-    const handleImageClick = (image: Post) => {
-        handleCloseBigImage
-        setSelectedImage(image);
-    };
-
-    const handleCloseBigImage = () => {
-        setSelectedImage(null);
     };
 
     return (
         <div>
-            <div className="search-bar">
-                <input
-                    type="text"
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                    placeholder="Search for tags"
-                />
-                <button onClick={handleSearch}>Search</button>
-            </div>
-            <div className="w-100% flex ">
-                {loading ? (
-                    <p>Loading...</p>
-                ) : (
-
-                    columns.map((column, index) => (
-                        <div key={index} className="w-1/4">
-                            {column.map((image) => (
-                                <SmallImage
-                                    key={image.id}
-                                    image={image}
-                                    onClick={() => handleImageClick(image)}
-                                />
-                            ))}
-                        </div>
-                    ))
-
-                )}
-            </div>
-            {selectedImage && (
-                <BigImage
-                    image={selectedImage}
-                    onClose={handleCloseBigImage}
-                />
-            )}
+            <h1>Logowanie</h1>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Nazwa użytkownika:
+                    <input type="text" value={username} onChange={(event) => setUsername(event.target.value)} />
+                </label>
+                <br />
+                <label>
+                    Hasło:
+                    <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+                </label>
+                <br />
+                <button type="submit">Zaloguj się</button>
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+            </form>
         </div>
     );
 };
 
-export default SearchPage;
+export default LoginPage;

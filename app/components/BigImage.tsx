@@ -13,8 +13,8 @@ interface Props {
         downvotes: number;
         createdAt: Date;
         updatedAt: Date;
-        width:number;
-        height:number;
+        width: number;
+        height: number;
         locked: Boolean;
         name: string;
         size: number;
@@ -29,8 +29,6 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [vote, setVote] = useState(0);
     const [voteFromSesion, setVoteFromSesion] = useState(0);
-    const [upActive, setUpActive] = useState(false);
-    const [downActive, setDownActive] = useState(false);
     const [showCommentForm, setShowCommentForm] = useState(false);
 
     const sessionContext = useContext(SessionContext);
@@ -41,38 +39,38 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
 
     const { addVote, getVote } = sessionContext;
 
-    useEffect(() => {
-        try {
-            const currentVote = getVote(image._id);
-            console.log('currentVote:', currentVote);
-            if (currentVote !== null && currentVote !== undefined && typeof currentVote === 'number') {
-                setVote(currentVote);
+    // useEffect(() => {
+    //     try {
+    //         const currentVote = getVote(image._id);
+    //         console.log('currentVote:', currentVote);
+    //         if (currentVote !== null && currentVote !== undefined && typeof currentVote === 'number') {
+    //             setVote(currentVote);
 
-                switch (currentVote) {
-                    case -1:
-                        setUpActive(false);
-                        setDownActive(true);
-                        setVoteFromSesion(1);
-                        break;
-                    case 1:
-                        setUpActive(true);
-                        setDownActive(false);
-                        setVoteFromSesion(-1);
-                        break;
-                    default:
-                        setUpActive(false);
-                        setDownActive(false);
-                        setVoteFromSesion(0);
-                        break;
-                }
-                console.log(currentVote)
-            } else {
-                //console.error('Błąd: currentVote nie jest liczbą');
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }, [image._id]);
+    //             switch (currentVote) {
+    //                 case -1:
+    //                     setUpActive(false);
+    //                     setDownActive(true);
+    //                     setVoteFromSesion(1);
+    //                     break;
+    //                 case 1:
+    //                     setUpActive(true);
+    //                     setDownActive(false);
+    //                     setVoteFromSesion(-1);
+    //                     break;
+    //                 default:
+    //                     setUpActive(false);
+    //                     setDownActive(false);
+    //                     setVoteFromSesion(0);
+    //                     break;
+    //             }
+    //             console.log(currentVote)
+    //         } else {
+    //             //console.error('Błąd: currentVote nie jest liczbą');
+    //         }
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // }, [image._id]);
 
     const handleCommentOn = () => {
         setShowCommentForm(!showCommentForm);
@@ -84,63 +82,94 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     };
 
     const handleUpvote = () => {
-        if (upActive) {
-            setUpActive(false);
+        const currentVote = getVote(image._id);
+        if (currentVote === 1) {
             setVote(0);
-            changeVoteInDb(-1);
+            addVote(image._id, 0);
         } else {
-            if (downActive) {
-                changeVoteInDb(2);
-            } else {
-                changeVoteInDb(1);
-            }
-            setUpActive(true);
-            setDownActive(false);
             setVote(1);
+            addVote(image._id, 1);
         }
     };
 
     const handleDownvote = () => {
-        if (downActive) {
-            setDownActive(false);
+        const currentVote = getVote(image._id);
+        if (currentVote === -1) {
             setVote(0);
-            changeVoteInDb(1);
+            addVote(image._id, 0);
         } else {
-            if (upActive) {
-                changeVoteInDb(-2);
-            } else {
-                changeVoteInDb(-1);
-            }
-            setDownActive(true);
-            setUpActive(false);
             setVote(-1);
+            addVote(image._id, -1);
         }
     };
 
-    const changeVoteInDb = (voteValue: number) => {
+    // const handleCommentOn = () => {
+    //     setShowCommentForm(!showCommentForm);
+    //     console.log(image._id)
+    // };
+
+    // const handleCommentOff = () => {
+    //     setShowCommentForm(true);
+    // };
+
+    // const handleUpvote = () => {
+    //     if (upActive) {
+    //         setUpActive(false);
+    //         setVote(0);
+    //         changeVoteInDb(-1);
+    //     } else {
+    //         if (downActive) {
+    //             changeVoteInDb(2);
+    //         } else {
+    //             changeVoteInDb(1);
+    //         }
+    //         setUpActive(true);
+    //         setDownActive(false);
+    //         setVote(1);
+    //     }
+    // };
+
+    // const handleDownvote = () => {
+    //     if (downActive) {
+    //         setDownActive(false);
+    //         setVote(0);
+    //         changeVoteInDb(1);
+    //     } else {
+    //         if (upActive) {
+    //             changeVoteInDb(-2);
+    //         } else {
+    //             changeVoteInDb(-1);
+    //         }
+    //         setDownActive(true);
+    //         setUpActive(false);
+    //         setVote(-1);
+    //     }
+    // };
+
+    // const changeVoteInDb = (voteValue: number) => {
 
 
-        console.log('Change vote in DB function called!');
-        fetch('/api/mongo/posts', {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ _id: image._id, vote: voteValue }),
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error updating vote: ${response.status}`);
-                }
-                else {
-                    addVote(image._id, voteValue + vote);
-                }
-                return response.text();
-            })
-            .then(data => console.log(data))
-            .catch(error => console.error(error));
+    //     console.log('Change vote in DB function called!');
+    //     fetch('/api/mongo/posts', {
+    //         method: 'PATCH',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({ _id: image._id, vote: voteValue }),
+    //     })
+    //         .then(response => {
+    //             if (!response.ok) {
+    //                 throw new Error(`Error updating vote: ${response.status}`);
+    //             }
+    //             else {
+    //                 addVote(image._id, voteValue + vote);
+    //             }
+    //             return response.text();
+    //         })
+    //         .then(data => console.log(data))
+    //         .catch(error => console.error(error));
 
-    };
+    // };
 
     const handleImageError = () => {
         setImageUrl('https://media.istockphoto.com/id/1472933890/vector/no-image-vector-symbol-missing-available-icon-no-gallery-for-this-moment-placeholder.jpg?s=612x612&w=0&k=20&c=Rdn-lecwAj8ciQEccm0Ep2RX50FCuUJOaEM8qQjiLL0=');
@@ -205,16 +234,16 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 </div>
                 <div className="flex flex-row justify-between w-[100%]">
                     <div className="flex justify-start">
-                        <Button onClick={handleCommentOn} className={upActive ? 'bg-light-secondary' : ''}>
+                        <Button onClick={handleCommentOn} clicked={showCommentForm}>
                             Comment
                         </Button>
                     </div>
                     <div className="flex justify-end items-center">
                         <div className="flex flex-row items-center">
-                            <Button onClick={handleUpvote} className={upActive ? 'bg-light-secondary' : ''}>
+                            <Button onClick={handleUpvote} clicked={vote == 1}>
                                 Up
                             </Button>
-                            <Button onClick={handleDownvote} className={downActive ? 'bg-light-secondary' : ''}>
+                            <Button onClick={handleDownvote} clicked={vote == -1}>
                                 Down
                             </Button>
                             <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote + voteFromSesion}</span>
