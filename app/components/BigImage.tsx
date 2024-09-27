@@ -28,7 +28,6 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     const [imageUrl, setImageUrl] = useState(image.url);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [vote, setVote] = useState(0);
-    const [voteFromSesion, setVoteFromSesion] = useState(0);
     const [showCommentForm, setShowCommentForm] = useState(false);
 
     const sessionContext = useContext(SessionContext);
@@ -39,50 +38,24 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
 
     const { addVote, getVote } = sessionContext;
 
-    // useEffect(() => {
-    //     try {
-    //         const currentVote = getVote(image._id);
-    //         console.log('currentVote:', currentVote);
-    //         if (currentVote !== null && currentVote !== undefined && typeof currentVote === 'number') {
-    //             setVote(currentVote);
-
-    //             switch (currentVote) {
-    //                 case -1:
-    //                     setUpActive(false);
-    //                     setDownActive(true);
-    //                     setVoteFromSesion(1);
-    //                     break;
-    //                 case 1:
-    //                     setUpActive(true);
-    //                     setDownActive(false);
-    //                     setVoteFromSesion(-1);
-    //                     break;
-    //                 default:
-    //                     setUpActive(false);
-    //                     setDownActive(false);
-    //                     setVoteFromSesion(0);
-    //                     break;
-    //             }
-    //             console.log(currentVote)
-    //         } else {
-    //             //console.error('Błąd: currentVote nie jest liczbą');
-    //         }
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // }, [image._id]);
-
     const handleCommentOn = () => {
         setShowCommentForm(!showCommentForm);
         console.log(image._id)
     };
 
-    const handleCommentOff = () => {
-        setShowCommentForm(true);
-    };
+
+    useEffect(() => {
+        const currentVote = getVote(image._id);
+        if (typeof currentVote === "number") {
+            setVote(currentVote)
+        }
+    }, [image._id]);
+
 
     const handleUpvote = () => {
         const currentVote = getVote(image._id);
+        console.log(currentVote)
+        console.log(currentVote)
         if (currentVote === 1) {
             setVote(0);
             addVote(image._id, 0);
@@ -94,6 +67,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
 
     const handleDownvote = () => {
         const currentVote = getVote(image._id);
+        console.log(currentVote)
         if (currentVote === -1) {
             setVote(0);
             addVote(image._id, 0);
@@ -103,73 +77,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
         }
     };
 
-    // const handleCommentOn = () => {
-    //     setShowCommentForm(!showCommentForm);
-    //     console.log(image._id)
-    // };
 
-    // const handleCommentOff = () => {
-    //     setShowCommentForm(true);
-    // };
-
-    // const handleUpvote = () => {
-    //     if (upActive) {
-    //         setUpActive(false);
-    //         setVote(0);
-    //         changeVoteInDb(-1);
-    //     } else {
-    //         if (downActive) {
-    //             changeVoteInDb(2);
-    //         } else {
-    //             changeVoteInDb(1);
-    //         }
-    //         setUpActive(true);
-    //         setDownActive(false);
-    //         setVote(1);
-    //     }
-    // };
-
-    // const handleDownvote = () => {
-    //     if (downActive) {
-    //         setDownActive(false);
-    //         setVote(0);
-    //         changeVoteInDb(1);
-    //     } else {
-    //         if (upActive) {
-    //             changeVoteInDb(-2);
-    //         } else {
-    //             changeVoteInDb(-1);
-    //         }
-    //         setDownActive(true);
-    //         setUpActive(false);
-    //         setVote(-1);
-    //     }
-    // };
-
-    // const changeVoteInDb = (voteValue: number) => {
-
-
-    //     console.log('Change vote in DB function called!');
-    //     fetch('/api/mongo/posts', {
-    //         method: 'PATCH',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify({ _id: image._id, vote: voteValue }),
-    //     })
-    //         .then(response => {
-    //             if (!response.ok) {
-    //                 throw new Error(`Error updating vote: ${response.status}`);
-    //             }
-    //             else {
-    //                 addVote(image._id, voteValue + vote);
-    //             }
-    //             return response.text();
-    //         })
-    //         .then(data => console.log(data))
-    //         .catch(error => console.error(error));
-
-    // };
 
     const handleImageError = () => {
         setImageUrl('https://media.istockphoto.com/id/1472933890/vector/no-image-vector-symbol-missing-available-icon-no-gallery-for-this-moment-placeholder.jpg?s=612x612&w=0&k=20&c=Rdn-lecwAj8ciQEccm0Ep2RX50FCuUJOaEM8qQjiLL0=');
@@ -246,7 +154,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                             <Button onClick={handleDownvote} clicked={vote == -1}>
                                 Down
                             </Button>
-                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote + voteFromSesion}</span>
+                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote}</span>
                         </div>
                     </div>
                 </div>

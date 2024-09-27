@@ -130,26 +130,34 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         });
     };
 
-    const addVote = (id: string, vote: number) => {
+    const addVote2 = (id: string, vote: number) => {
         setVotes((prevVotes) => ({ ...prevVotes, [id]: vote }));
         localStorage.setItem('votes', JSON.stringify(votes));
 
     };
 
-    const addVote2 = (id: string, voteValue: number) => {
+    const addVote = (id: string, voteValue: number) => {
         const currentVote = getVote(id);
         let newVote = 0;
-
-        if (currentVote !== null && currentVote !== undefined && typeof currentVote === 'number') {
-            newVote = currentVote + voteValue;
-        } else {
-            newVote = voteValue;
+        if (currentVote == 0) {
+            newVote = voteValue
+        } else if (currentVote == 1 && voteValue == 0) {
+            newVote = -currentVote + voteValue;
         }
+        // } else if (currentVote == 1 && voteValue == 0) {
+        //     newVote = -1;
+        // } else if (currentVote == 1 && voteValue == -1) {
+        //     newVote = -2;
+        // } else if (currentVote == -1 && voteValue == 0) {
+        //     newVote = 1;
+        // } else if (currentVote == -1 && voteValue == 1) {
+        //     newVote = 2;
+        // }
 
-        setVotes((prevVotes) => ({ ...prevVotes, [id]: newVote }));
+
+        setVotes((prevVotes) => ({ ...prevVotes, [id]: voteValue }));
         localStorage.setItem('votes', JSON.stringify(votes));
 
-        // Update the vote count in the database
         fetch('/api/mongo/posts', {
             method: 'PATCH',
             headers: {

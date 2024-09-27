@@ -26,9 +26,6 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
     const [imageUrl, setImageUrl] = useState(image.url);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [vote, setVote] = useState(0);
-    const [voteFromSesion, setVoteFromSesion] = useState(0);
-    const [upActive, setUpActive] = useState(false)
-    const [downActive, setDownActive] = useState(false);
 
     const sessionContext = useContext(SessionContext);
 
@@ -40,100 +37,39 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
 
 
     useEffect(() => {
-        try {
-            const currentVote = getVote(image._id);
-            console.log('currentVote:', currentVote);
-            if (currentVote !== null && currentVote !== undefined && typeof currentVote === 'number') {
-                setVote(currentVote);
-
-                switch (currentVote) {
-                    case -1:
-                        setUpActive(false);
-                        setDownActive(true);
-                        setVoteFromSesion(1);
-                        break;
-                    case 1:
-                        setUpActive(true);
-                        setDownActive(false);
-                        setVoteFromSesion(-1);
-                        break;
-                    default:
-                        setUpActive(false);
-                        setDownActive(false);
-                        setVoteFromSesion(0);
-                        break;
-                }
-                console.log(currentVote)
-            } else {
-                //console.error('Błąd: currentVote nie jest liczbą');
-            }
-        } catch (error) {
-            console.error(error);
+        const currentVote = getVote(image._id);
+        if (typeof currentVote === "number") {
+            setVote(currentVote)
         }
     }, [image._id]);
 
+
     const handleUpvote = () => {
-        if (upActive) {
-            setUpActive(false);
+        const currentVote = getVote(image._id);
+        console.log(currentVote)
+        console.log(currentVote)
+        if (currentVote === 1) {
             setVote(0);
-            changeVoteInDb(-1)
+            addVote(image._id, 0);
         } else {
-            if (downActive) {
-                changeVoteInDb(2)
-            } else {
-                changeVoteInDb(1)
-            }
-            setUpActive(true);
-            setDownActive(false);
             setVote(1);
-
+            addVote(image._id, 1);
         }
-
     };
 
     const handleDownvote = () => {
-        if (downActive) {
-            setDownActive(false);
+        const currentVote = getVote(image._id);
+        console.log(currentVote)
+        if (currentVote === -1) {
             setVote(0);
-            changeVoteInDb(1)
+            addVote(image._id, 0);
         } else {
-            if (upActive) {
-                changeVoteInDb(-2)
-            } else {
-                changeVoteInDb(-1)
-            }
-            setDownActive(true);
-            setUpActive(false);
             setVote(-1);
+            addVote(image._id, -1);
         }
-
     };
 
 
-    const changeVoteInDb = (voteValue: number) => {
-
-
-        console.log('Change vote in DB function called!');
-        fetch('/api/mongo/posts', {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ _id: image._id, vote: voteValue }),
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error updating vote: ${response.status}`);
-                }
-                else {
-                    addVote(image._id, voteValue + vote);
-                }
-                return response.text();
-            })
-            .then(data => console.log(data))
-            .catch(error => console.error(error));
-
-    };
     const handleImageError = () => {
         setImageUrl('https://media.istockphoto.com/id/1472933890/vector/no-image-vector-symbol-missing-available-icon-no-gallery-for-this-moment-placeholder.jpg?s=612x612&w=0&k=20&c=Rdn-lecwAj8ciQEccm0Ep2RX50FCuUJOaEM8qQjiLL0=');
     };
@@ -192,17 +128,12 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 </div>
                 <div className="w-[100%] flex flex-row justify-end items-center">
 
-                    <Button
-                        onClick={handleUpvote}
-                        className={upActive ? 'bg-light-secondary' : ''}
-                    >
+                    <Button onClick={handleUpvote} clicked={vote == 1}>
                         Up
                     </Button>
-                    <span className="mx-2">{image.upvotes - image.downvotes + vote + voteFromSesion}</span>
-                    <Button
-                        onClick={handleDownvote}
-                        className={downActive ? 'bg-light-secondary' : ''}
-                    >
+
+                    <span className="mx-2">{image.upvotes - image.downvotes + vote}</span>
+                    <Button onClick={handleDownvote} clicked={vote == -1}>
                         Down
                     </Button>
                 </div>
