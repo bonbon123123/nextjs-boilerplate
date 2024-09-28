@@ -1,18 +1,7 @@
 "use client";
 import { createContext, useState, useEffect } from 'react';
 import { ReactNode } from 'react';
-
-interface SessionContextValue {
-    sessionId: string | null;
-    userId: string | null;
-    userName: string | null;
-    login: (username: string, password: string) => Promise<void>;
-    logout: () => void;
-    votes: { [id: string]: number };
-    comments: { [id: string]: number };
-    addVote: (id: string, vote: number) => void;
-    getVote: (id: string) => number | null;
-}
+import SessionContextValue from '../interfaces/SessionContextValue';
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
@@ -39,7 +28,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     const [userName, setUserName] = useState<string | null>(null);
     const [votes, setVotes] = useState<{ [id: string]: number }>({});
     const [comments, commentsVotes] = useState<{ [id: string]: number }>({});
-
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const setAll = () => {
         const sessionIdFromStorage = localStorage.getItem('sessionId');
@@ -130,11 +119,6 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         });
     };
 
-    const addVote2 = (id: string, vote: number) => {
-        setVotes((prevVotes) => ({ ...prevVotes, [id]: vote }));
-        localStorage.setItem('votes', JSON.stringify(votes));
-
-    };
 
     const addVote = (id: string, voteValue: number) => {
         const currentVote = getVote(id);

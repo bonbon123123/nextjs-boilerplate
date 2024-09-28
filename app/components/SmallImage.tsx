@@ -41,13 +41,12 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
         if (typeof currentVote === "number") {
             setVote(currentVote)
         }
-    }, [image._id]);
+    }, [image._id, sessionContext.votes]);
 
 
     const handleUpvote = () => {
         const currentVote = getVote(image._id);
-        console.log(currentVote)
-        console.log(currentVote)
+
         if (currentVote === 1) {
             setVote(0);
             addVote(image._id, 0);

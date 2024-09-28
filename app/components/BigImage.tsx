@@ -49,7 +49,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
         if (typeof currentVote === "number") {
             setVote(currentVote)
         }
-    }, [image._id]);
+    }, [image._id, sessionContext.votes]);
 
 
     const handleUpvote = () => {

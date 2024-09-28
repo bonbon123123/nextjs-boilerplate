@@ -2,27 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import SmallImage from '../../components/SmallImage';
 import BigImage from '../../components/BigImage';
+import Post from '@/app/interfaces/Post';
 
-interface Post {
-    id: number;
-    title: string;
-    url: string;
-    tags: Array<string>;
-    upvotes: number;
-    downvotes: number;
-    createdAt: Date;
-    updatedAt: Date;
-    locked: Boolean;
-    Name: string;
-    Size: number;
-    Type: string;
-    _id: string;
-    width: number;
-    height: number;
-    name: string;
-    size: number;
-    type: string;
-}
 
 const SearchPage = () => {
     const [tags, setTags] = useState("");
