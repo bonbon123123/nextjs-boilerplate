@@ -28,7 +28,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     const [userName, setUserName] = useState<string | null>(null);
     const [votes, setVotes] = useState<{ [id: string]: number }>({});
     const [comments, commentsVotes] = useState<{ [id: string]: number }>({});
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
 
     const setAll = () => {
         const sessionIdFromStorage = localStorage.getItem('sessionId');
@@ -111,8 +111,13 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         setSessionId(null);
         setUserId(null);
         setUserName(null);
+        setVotes({});
+        commentsVotes({});
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userName');
         localStorage.removeItem('sessionId');
-        localStorage.removeItem('user');
+        localStorage.removeItem('votes');
+        localStorage.removeItem('comments');
     };
 
 
@@ -124,7 +129,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     const addVote = (id: string, voteValue: number) => {
         const currentVote = getVote(id);
         let newVote = 0;
-        if (currentVote == 0) {
+        if (!currentVote || currentVote == 0) {
             newVote = voteValue
         } else if (currentVote == -voteValue) {
             newVote = -currentVote * 2;
@@ -133,7 +138,9 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         }
         setVotes((prevVotes) => ({ ...prevVotes, [id]: voteValue }));
         localStorage.setItem('votes', JSON.stringify(votes));
-
+        console.log(voteValue)
+        console.log("oddaje taki głos: ")
+        console.log(newVote)
         fetch('/api/mongo/posts', {
             method: 'PATCH',
             headers: {
@@ -142,32 +149,36 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             body: JSON.stringify({ _id: id, vote: newVote }),
         })
             .then(response => {
+                console.log(response)
                 if (!response.ok) {
                     throw new Error(`Error updating vote: ${response.status}`);
                 }
             })
             .catch(error => console.error(error));
 
-        let targetId = id
-        fetch('/api/mongo/voting', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId,
-                targetId,
-                voteValue,
-            }),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                console.log('Nie error:', data);
+        if (userId != null) {
+            let targetId = id
+            fetch('/api/mongo/voting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId,
+                    targetId,
+                    voteValue,
+                }),
             })
-            .catch((error) => {
-                console.error('Error:', error);
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('Nie error:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
 
-            });
+                });
+        }
+
     };
 
     const getVote = (id: string) => {

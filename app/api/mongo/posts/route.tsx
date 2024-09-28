@@ -70,7 +70,8 @@ export async function PATCH(req: Request) {
             console.log("patch")
             console.log(post)
         }
-
+        console.log("dodaje taki głos:")
+        console.log(data.vote)
         if (data.vote !== undefined) {
             switch (data.vote) {
                 case -2:
