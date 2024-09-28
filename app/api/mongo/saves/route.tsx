@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import User from "../models/User";
 import dbConnect from "../db";
 
-export async function POST(req: NextResponse) {
+export async function POST(req: Request) {
     const body = await req.json();
     const { userId, postId } = body;
 
@@ -23,7 +23,7 @@ export async function POST(req: NextResponse) {
     return NextResponse.json({ message: 'Post saved successfully' }, { status: 200 });
 }
 
-export async function PATCH(req: NextResponse) {
+export async function PATCH(req: Request) {
     const body = await req.json();
     const { userId, postId } = body;
 
@@ -44,7 +44,7 @@ export async function PATCH(req: NextResponse) {
     return NextResponse.json({ message: 'Post removed from saved posts' }, { status: 200 });
 }
 
-export async function GET(req: NextResponse) {
+export async function GET(req: Request) {
     const body = await req.json();
     const { userId } = body;
 
