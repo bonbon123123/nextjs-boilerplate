@@ -1,19 +1,18 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from "next/server";
 import User from "../models/User";
 import dbConnect from "../db";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import { NextResponse } from 'next/server';
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: Request) {
     await dbConnect();
 
     try {
         const users = await User.find().lean();
-        return res.status(200).json(users);
+        return NextResponse.json(users, { status: 200 });
     } catch (error) {
         console.error('Error fetching users:', error);
-        return res.status(500).json({ message: 'Error fetching users', error });
+        return NextResponse.json({ message: 'Error fetching users', error }, { status: 500 });
     }
 }
 
@@ -46,28 +45,28 @@ export async function POST(req: Request) {
                 isVerified: false
             });
         await newUser.save();
-        return new NextResponse(JSON.stringify(newUser), { status: 201 });
+        return NextResponse.json(newUser, { status: 201 });
 
     } catch (error) {
         console.error('Error creating user:', error);
-        return new NextResponse(JSON.stringify({ message: 'Error creating user', error }), { status: 500 });
+        return NextResponse.json({ message: 'Error creating user', error }, { status: 500 });
     }
 }
 
-export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
+export async function PATCH(req: Request) {
     await dbConnect();
 
     try {
-        const { _id, username, email, currentPassword, newPassword, role } = req.body;
+        const { _id, username, email, currentPassword, newPassword, role } = await req.json();
         const user = await User.findById(_id);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
 
 
         const isValidPassword = await bcrypt.compare(currentPassword, user.password);
         if (!isValidPassword) {
-            return res.status(401).json({ message: 'Invalid current password' });
+            return NextResponse.json({ message: 'Invalid current password' }, { status: 401 });
         }
 
         if (newPassword) {
@@ -81,27 +80,24 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse) {
         if (role) user.role = role;
 
         await user.save();
-        return res.status(200).json(user);
+        return NextResponse.json(user, { status: 200 });
     } catch (error) {
         console.error('Error updating user:', error);
-        return res.status(500).json({ message: 'Error updating user', error });
+        return NextResponse.json({ message: 'Error updating user', error }, { status: 500 });
     }
 }
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+export async function DELETE(req: Request) {
     await dbConnect();
     try {
-        const { _id } = req.body;
+        const { _id } = await req.json();
         const user = await User.findByIdAndDelete(_id);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
-        return res.status(200).json({ message: 'User deleted successfully' });
+        return NextResponse.json({ message: 'User deleted successfully' }, { status: 200 });
     } catch (error) {
         console.error('Error deleting user:', error);
-        return res.status(500).json({ message: 'Error deleting user', error });
+        return NextResponse.json({ message: 'Error deleting user', error }, { status: 500 });
     }
-
-
 }
-
