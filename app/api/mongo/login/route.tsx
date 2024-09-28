@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from 'uuid';
 
-export async function POST(req: NextResponse) {
+export async function POST(req: Request) {
     await dbConnect();
     const body = await req.json();
     const { username, password, isAnonymous } = body;
