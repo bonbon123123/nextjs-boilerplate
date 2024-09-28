@@ -9,7 +9,7 @@ interface Vote {
 }
 
 
-export async function POST(req: NextResponse) {
+export async function POST(req: Request) {
     const body = await req.json();
     const { userId, targetId, voteValue } = body;
     console.log(userId)
