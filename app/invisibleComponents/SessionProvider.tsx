@@ -78,19 +78,31 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('votes', JSON.stringify(votes));
     }, [votes]);
 
+    interface Vote {
+        targetId: string;
+        voteValue: number;
+        createdAt: string;
+    }
+
     const login = async (username: string, password: string) => {
         const user = await authenticate(username, password, false);
         if (user) {
-            console.log(user)
+            const votesMap: { [key: string]: number } = {};
+            user.votes.forEach((vote: any) => {
+                votesMap[vote.targetId] = vote.voteValue;
+            });
+            console.log("//////////////////////////////////////")
+            console.log(votesMap)
+            console.log(votes)
             setSessionId(user.sessionId);
             setUserId(user.userId);
             setUserName(user.username);
-            setVotes(user.votes);
+            setVotes(votesMap);
             commentsVotes(user.comments);
             localStorage.setItem('userId', user.userId);
             localStorage.setItem('userName', user.username);
             localStorage.setItem('sessionId', user.sessionId);
-            localStorage.setItem('votes', user.votes);
+            localStorage.setItem('votes', JSON.stringify(votesMap));
             localStorage.setItem('comments', user.comments);
         }
     };
@@ -104,19 +116,8 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     };
 
 
-    const addVoteInDb = async (targetType: string, imageId: string, commentId: string, vote: number) => {
-        await fetch('/api/mongo/voting', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                targetType,
-                commentId,
-                imageId,
-                vote,
-            }),
-        });
+    const addVoteInDb = async (imageId: string, vote: number) => {
+
     };
 
 
@@ -125,20 +126,11 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         let newVote = 0;
         if (currentVote == 0) {
             newVote = voteValue
-        } else if (currentVote == 1 && voteValue == 0) {
-            newVote = -currentVote + voteValue;
+        } else if (currentVote == -voteValue) {
+            newVote = -currentVote * 2;
+        } else if (currentVote == 1 || currentVote == -1 && voteValue == 0) {
+            newVote = (-currentVote);
         }
-        // } else if (currentVote == 1 && voteValue == 0) {
-        //     newVote = -1;
-        // } else if (currentVote == 1 && voteValue == -1) {
-        //     newVote = -2;
-        // } else if (currentVote == -1 && voteValue == 0) {
-        //     newVote = 1;
-        // } else if (currentVote == -1 && voteValue == 1) {
-        //     newVote = 2;
-        // }
-
-
         setVotes((prevVotes) => ({ ...prevVotes, [id]: voteValue }));
         localStorage.setItem('votes', JSON.stringify(votes));
 
@@ -155,6 +147,27 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
                 }
             })
             .catch(error => console.error(error));
+
+        let targetId = id
+        fetch('/api/mongo/voting', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId,
+                targetId,
+                voteValue,
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('Nie error:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+
+            });
     };
 
     const getVote = (id: string) => {

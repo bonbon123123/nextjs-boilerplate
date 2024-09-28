@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const dbConnect = async () => {
     try {
         if (mongoose.connection.readyState !== 1) {
-            await mongoose.connect(process.env.MONGO_URL_POSTS, {
+            await mongoose.connect(process.env.MONGO_URL, {
                 autoIndex: true,
             });
             console.log("Newly connected");

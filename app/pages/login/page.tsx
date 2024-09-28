@@ -20,6 +20,7 @@ const LoginPage = () => {
         try {
             await session.login(username, password);
         } catch (error) {
+            alert("złe dane logowania")
             setError('Błąd logowania');
         }
     };

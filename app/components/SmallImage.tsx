@@ -25,9 +25,11 @@ interface Props {
 const SmallImage: React.FC<Props> = ({ image, onClick }) => {
     const [imageUrl, setImageUrl] = useState(image.url);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageSaved, setImageSaved] = useState(false);
     const [vote, setVote] = useState(0);
-
+    const [voteFromDb, setVoteFromDb] = useState(0);
     const sessionContext = useContext(SessionContext);
+
 
     if (!sessionContext) {
         throw new Error('SessionContext is not provided');
@@ -35,14 +37,39 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
 
     const { addVote, getVote } = sessionContext;
 
+    useEffect(() => {
+        const currentVote = getVote(image._id);
+        if (typeof currentVote === "number") {
+            setVoteFromDb(currentVote);
+        }
+    }, [image._id]);
 
     useEffect(() => {
         const currentVote = getVote(image._id);
         if (typeof currentVote === "number") {
+
             setVote(currentVote)
         }
     }, [image._id, sessionContext.votes]);
 
+
+    const handleSave = async () => {
+        if (sessionContext.userId) {
+            const response = await fetch('/api/saves', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: sessionContext.userId, postId: image._id }),
+            });
+
+            if (response.ok) {
+                console.log('Post saved successfully');
+            } else {
+                console.error('Error saving post');
+            }
+        } else {
+            console.log('You must be logged in to save posts');
+        }
+    };
 
     const handleUpvote = () => {
         const currentVote = getVote(image._id);
@@ -88,6 +115,15 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 maxHeight: 'calc(100vw / 2)',
             }}
         >
+            <div
+                className="absolute top-0 left-0 w-[100%] flex flex-row justify-end"
+                style={{ zIndex: 90 }}
+
+            >
+                <Button onClick={handleSave} clicked={vote == 1}>
+                    Save
+                </Button>
+            </div>
             <Image
                 alt={"Big image"}
                 width={image.width}
@@ -104,6 +140,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 }}
 
             />
+
             <div
                 className="absolute bottom-0 left-0 w-[100%] h-[20%] bg-gradient-to-b from-transparent to-light-main"
                 style={{ zIndex: 90 }}
@@ -113,6 +150,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 className="absolute bottom-0 left-0 w-[100%] rounded-lg flex center flex-col justify-center items-center"
                 style={{ zIndex: 100 }}
             >
+
                 <div className="w-[100%]  flex flex-row justify-center items-center mb-2">
                     {image.tags?.map((tag, index) => {
                         return (
@@ -124,6 +162,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                             </span>
                         );
                     })}
+
                 </div>
                 <div className="w-[100%] flex flex-row justify-end items-center">
 
@@ -131,7 +170,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                         Up
                     </Button>
 
-                    <span className="mx-2">{image.upvotes - image.downvotes + vote}</span>
+                    <span className="mx-2">{image.upvotes - image.downvotes + vote - voteFromDb}</span>
                     <Button onClick={handleDownvote} clicked={vote == -1}>
                         Down
                     </Button>

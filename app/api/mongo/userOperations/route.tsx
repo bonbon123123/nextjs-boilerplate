@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import User from "../models/User";
-import dbConnect from "./db";
+import dbConnect from "../db";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { NextResponse } from 'next/server';

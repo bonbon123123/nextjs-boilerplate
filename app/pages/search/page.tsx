@@ -71,9 +71,9 @@ const SearchPage = () => {
 
                     columns.map((column, index) => (
                         <div key={index} className="w-1/4">
-                            {column.map((image) => (
+                            {column.map((image, index) => (
                                 <SmallImage
-                                    key={image.id}
+                                    key={index}
                                     image={image}
                                     onClick={() => handleImageClick(image)}
                                 />

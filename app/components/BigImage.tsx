@@ -29,6 +29,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [vote, setVote] = useState(0);
     const [showCommentForm, setShowCommentForm] = useState(false);
+    const [voteFromDb, setVoteFromDb] = useState(0);
 
     const sessionContext = useContext(SessionContext);
 
@@ -43,6 +44,12 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
         console.log(image._id)
     };
 
+    useEffect(() => {
+        const currentVote = getVote(image._id);
+        if (typeof currentVote === "number") {
+            setVoteFromDb(currentVote);
+        }
+    }, [image._id]);
 
     useEffect(() => {
         const currentVote = getVote(image._id);
@@ -154,7 +161,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                             <Button onClick={handleDownvote} clicked={vote == -1}>
                                 Down
                             </Button>
-                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote}</span>
+                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote - voteFromDb}</span>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Comment from "../models/Comment";
-import dbConnect from "./db";
+import dbConnect from "../db";
 import mongoose from "mongoose";
 
 

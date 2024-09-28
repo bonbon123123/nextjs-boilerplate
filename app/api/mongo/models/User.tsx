@@ -13,13 +13,14 @@ const UserSchema = new mongoose.Schema({
     isVerified: Boolean,
     votes: [
         {
-            type: mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.Mixed,
             ref: 'Vote',
             postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
-            voteType: { type: String, enum: ['upvote', 'downvote'] },
+            voteValue: { type: Number },
             createdAt: Date,
         },
     ],
+    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 }, { timestamps: true });
 
