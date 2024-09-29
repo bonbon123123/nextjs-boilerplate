@@ -27,6 +27,10 @@ export async function POST(req: Request) {
     try {
         const { username, password, email } = await req.json();
 
+        if (!username) {
+            return NextResponse.json({ message: 'Username is required' }, { status: 400 });
+        }
+
         if (!password) {
             return NextResponse.json({ message: 'Password is required' }, { status: 400 });
         }

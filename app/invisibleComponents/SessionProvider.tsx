@@ -26,34 +26,74 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
-    const [votes, setVotes] = useState<{ [id: string]: number }>({});
-    const [comments, commentsVotes] = useState<{ [id: string]: number }>({});
+    const [votes, setVotes] = useState<{ [id: string]: number }>(() => {
+        const votesFromStorage = localStorage.getItem('votes');
+        return votesFromStorage ? JSON.parse(votesFromStorage) : {};
+    });
 
+    const [savedPosts, setSavedPosts] = useState<Set<string>>(() => {
+        const savedPostsFromStorage = localStorage.getItem('savedPosts');
+        return savedPostsFromStorage ? JSON.parse(savedPostsFromStorage) : {};
+    });
+
+    useEffect(() => {
+        console.log(localStorage.getItem('savedPosts'));
+        console.log(localStorage.getItem('savedPosts'));
+        localStorage.setItem('savedPosts', serializeSavedPosts(savedPosts));
+    }, [savedPosts]);
+
+
+    useEffect(() => {
+        localStorage.setItem('votes', JSON.stringify(votes));
+    }, [votes]);
+    
+    const serializeSavedPosts = (savedPosts: Set<string> | string[]) => {
+        if (savedPosts instanceof Set) {
+            return JSON.stringify(Array.from(savedPosts));
+        } else {
+            return JSON.stringify(savedPosts);
+        }
+    };
 
     const setAll = () => {
         const sessionIdFromStorage = localStorage.getItem('sessionId');
         setSessionId(sessionIdFromStorage);
+
         const user = localStorage.getItem('userId');
         setUserId(user);
+
         const userName = localStorage.getItem('userName');
         setUserName(userName);
 
-        const commentsFromStorage = localStorage.getItem('comments');
-        if (commentsFromStorage) {
-            const comments = JSON.parse(commentsFromStorage);
-            if (Object.keys(comments).length > 0) {
-                commentsVotes(comments);
-            }
-        }
+
         const votesFromStorage = localStorage.getItem('votes');
         if (votesFromStorage) {
             try {
                 const votes = JSON.parse(votesFromStorage);
-                if (Object.keys(votes).length > 0) {
-                    setVotes(votes);
+                setVotes(votes);
+            } catch (error) {
+                console.error('Błąd parsowania danych głosów:', error);
+            }
+        }
+
+        const savedPostsFromStorage = localStorage.getItem('savedPosts');
+        if (savedPostsFromStorage) {
+            try {
+                const parsedSavedPosts = JSON.parse(savedPostsFromStorage);
+
+                // Sprawdzamy, czy dane są tablicą
+                if (Array.isArray(parsedSavedPosts)) {
+                    setSavedPosts(new Set<string>(parsedSavedPosts));
+                } else {
+                    // Jeżeli dane są błędne (nie są tablicą), czyścimy je
+                    console.error("Dane w localStorage pod 'savedPosts' nie są tablicą:", parsedSavedPosts);
+                    localStorage.removeItem('savedPosts');
+                    setSavedPosts(new Set<string>());  // Resetujemy do pustego zestawu
                 }
             } catch (error) {
-                console.error('Błąd parsowania danych:', error);
+                console.error("Błąd parsowania savedPosts:", error);
+                localStorage.removeItem('savedPosts');  // Usuwamy uszkodzone dane
+                setSavedPosts(new Set<string>());  // Resetujemy do pustego zestawu
             }
         }
     };
@@ -74,36 +114,25 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
 
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem('votes', JSON.stringify(votes));
-    }, [votes]);
 
-    interface Vote {
-        targetId: string;
-        voteValue: number;
-        createdAt: string;
-    }
 
     const login = async (username: string, password: string) => {
         const user = await authenticate(username, password, false);
         if (user) {
             const votesMap: { [key: string]: number } = {};
             user.votes.forEach((vote: any) => {
-                votesMap[vote.targetId] = vote.voteValue;
+                votesMap[vote.postId] = vote.voteValue;
             });
-            console.log("//////////////////////////////////////")
-            console.log(votesMap)
-            console.log(votes)
+            setSavedPosts(new Set(user.savedPosts));
             setSessionId(user.sessionId);
             setUserId(user.userId);
             setUserName(user.username);
             setVotes(votesMap);
-            commentsVotes(user.comments);
+            localStorage.setItem('savedPosts', JSON.stringify(user.savedPosts))
             localStorage.setItem('userId', user.userId);
             localStorage.setItem('userName', user.username);
             localStorage.setItem('sessionId', user.sessionId);
             localStorage.setItem('votes', JSON.stringify(votesMap));
-            localStorage.setItem('comments', user.comments);
         }
     };
 
@@ -112,19 +141,48 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         setUserId(null);
         setUserName(null);
         setVotes({});
-        commentsVotes({});
+        setSavedPosts(new Set<string>());
         localStorage.removeItem('userId');
         localStorage.removeItem('userName');
         localStorage.removeItem('sessionId');
         localStorage.removeItem('votes');
         localStorage.removeItem('comments');
+        localStorage.removeItem('savedPosts');
     };
 
-
-    const addVoteInDb = async (imageId: string, vote: number) => {
-
+    const addSave = (id: string) => {
+        setSavedPosts((prevSavedPosts) => {
+            const updatedPosts = new Set(prevSavedPosts);
+            if (updatedPosts.has(id)) {
+                updatedPosts.delete(id);  // Usunięcie id, jeśli już istnieje w savedPosts
+            } else {
+                updatedPosts.add(id);     // Dodanie id, jeśli jeszcze nie istnieje
+            }
+            localStorage.setItem('savedPosts', JSON.stringify([...updatedPosts]));  // Konwersja do tablicy przed zapisaniem
+            return updatedPosts;
+        });
+        fetch('/api/mongo/saves', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId,
+                postId: id,
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                //console.log('Usunięto save:', data);
+            })
+            .catch((error) => {
+                console.error('Błąd usuwania save:', error);
+            });
     };
 
+    const getSave = (id: string): boolean => {
+        return savedPosts.has(id);  // Sprawdzenie, czy post został zapisany
+    };
 
     const addVote = (id: string, voteValue: number) => {
         const currentVote = getVote(id);
@@ -136,11 +194,15 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         } else if (currentVote == 1 || currentVote == -1 && voteValue == 0) {
             newVote = (-currentVote);
         }
-        setVotes((prevVotes) => ({ ...prevVotes, [id]: voteValue }));
-        localStorage.setItem('votes', JSON.stringify(votes));
-        console.log(voteValue)
-        console.log("oddaje taki głos: ")
-        console.log(newVote)
+
+        setVotes((prevVotes) => {
+            const updatedVotes = { ...prevVotes, [id]: voteValue };
+            localStorage.setItem('votes', JSON.stringify(updatedVotes));  // Aktualizacja localStorage
+            return updatedVotes;
+        });
+
+
+
         fetch('/api/mongo/posts', {
             method: 'PATCH',
             headers: {
@@ -149,13 +211,13 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             body: JSON.stringify({ _id: id, vote: newVote }),
         })
             .then(response => {
-                console.log(response)
                 if (!response.ok) {
                     throw new Error(`Error updating vote: ${response.status}`);
                 }
             })
             .catch(error => console.error(error));
-
+        console.log("oddaje taki głos: voteValue")
+        console.log(voteValue)
         if (userId != null) {
             let targetId = id
             fetch('/api/mongo/voting', {
@@ -171,7 +233,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             })
                 .then((response) => response.json())
                 .then((data) => {
-                    console.log('Nie error:', data);
+                    //console.log('Nie error:', data);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -182,7 +244,6 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const getVote = (id: string) => {
-
         if (Object.keys(votes).length > 0) {
             return votes[id];
         } else {
@@ -198,9 +259,11 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             login,
             logout,
             votes,
-            comments,
             addVote,
             getVote,
+            addSave,
+            getSave,
+            savedPosts,
         }}>
             {children}
         </SessionContext.Provider>

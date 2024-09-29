@@ -30,6 +30,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
     const [vote, setVote] = useState(0);
     const [showCommentForm, setShowCommentForm] = useState(false);
     const [voteFromDb, setVoteFromDb] = useState(0);
+    const [isSaved, setIsSaved] = useState(false);
 
     const sessionContext = useContext(SessionContext);
 
@@ -37,7 +38,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
         throw new Error('SessionContext is not provided');
     }
 
-    const { addVote, getVote } = sessionContext;
+    const { addVote, getVote, addSave, getSave } = sessionContext;
 
     const handleCommentOn = () => {
         setShowCommentForm(!showCommentForm);
@@ -49,20 +50,44 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
         if (typeof currentVote === "number") {
             setVoteFromDb(currentVote);
         }
+        const currentSave = getSave(image._id);
+
+        if (currentSave) {
+            setIsSaved(true);
+        }
+
     }, [image._id]);
+
+    useEffect(() => {
+        const currentSave = getSave(image._id);
+        if (currentSave) {
+            setIsSaved(true);
+        } else {
+            setIsSaved(false);
+        }
+    }, [image._id, sessionContext.savedPosts]);
 
     useEffect(() => {
         const currentVote = getVote(image._id);
         if (typeof currentVote === "number") {
-            setVote(currentVote)
+
+            setVote(currentVote);
         }
     }, [image._id, sessionContext.votes]);
+
+    const handleSave = async () => {
+        if (sessionContext.userId) {
+            addSave(image._id);
+            setIsSaved(!isSaved);
+
+        } else {
+            console.log('You must be logged in to save posts');
+        }
+    };
 
 
     const handleUpvote = () => {
         const currentVote = getVote(image._id);
-        console.log(currentVote)
-        console.log(currentVote)
         if (currentVote === 1) {
             setVote(0);
             addVote(image._id, 0);
@@ -74,7 +99,6 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
 
     const handleDownvote = () => {
         const currentVote = getVote(image._id);
-        console.log(currentVote)
         if (currentVote === -1) {
             setVote(0);
             addVote(image._id, 0);
@@ -151,6 +175,9 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                     <div className="flex justify-start">
                         <Button onClick={handleCommentOn} clicked={showCommentForm}>
                             Comment
+                        </Button>
+                        <Button onClick={handleSave} clicked={isSaved}>
+                            Save
                         </Button>
                     </div>
                     <div className="flex justify-end items-center">

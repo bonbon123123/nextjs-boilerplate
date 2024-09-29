@@ -28,6 +28,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
     const [imageSaved, setImageSaved] = useState(false);
     const [vote, setVote] = useState(0);
     const [voteFromDb, setVoteFromDb] = useState(0);
+    const [isSaved, setIsSaved] = useState(false);
     const sessionContext = useContext(SessionContext);
 
 
@@ -35,45 +36,57 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
         throw new Error('SessionContext is not provided');
     }
 
-    const { addVote, getVote } = sessionContext;
+    const { addVote, getVote, addSave, getSave } = sessionContext;
 
     useEffect(() => {
         const currentVote = getVote(image._id);
         if (typeof currentVote === "number") {
             setVoteFromDb(currentVote);
         }
+        const currentSave = getSave(image._id);
+
+        if (currentSave) {
+            setIsSaved(true);
+        } else {
+            setIsSaved(false);
+        }
+
     }, [image._id]);
+
+    useEffect(() => {
+        const currentSave = getSave(image._id);
+        if (currentSave) {
+            setIsSaved(true);
+        }else{
+            setIsSaved(false);
+        }
+    }, [image._id, sessionContext.savedPosts]);
 
     useEffect(() => {
         const currentVote = getVote(image._id);
         if (typeof currentVote === "number") {
 
-            setVote(currentVote)
+            setVote(currentVote);
         }
     }, [image._id, sessionContext.votes]);
 
-
     const handleSave = async () => {
         if (sessionContext.userId) {
-            const response = await fetch('/api/saves', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: sessionContext.userId, postId: image._id }),
-            });
+            addSave(image._id);
+            setIsSaved(!isSaved);
 
-            if (response.ok) {
-                console.log('Post saved successfully');
-            } else {
-                console.error('Error saving post');
-            }
         } else {
             console.log('You must be logged in to save posts');
         }
     };
 
+
+
+
+
+
     const handleUpvote = () => {
         const currentVote = getVote(image._id);
-
         if (currentVote === 1) {
             setVote(0);
             addVote(image._id, 0);
@@ -85,7 +98,6 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
 
     const handleDownvote = () => {
         const currentVote = getVote(image._id);
-        console.log(currentVote)
         if (currentVote === -1) {
             setVote(0);
             addVote(image._id, 0);
@@ -120,7 +132,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                 style={{ zIndex: 90 }}
 
             >
-                <Button onClick={handleSave} clicked={vote == 1}>
+                <Button onClick={handleSave} clicked={isSaved}>
                     Save
                 </Button>
             </div>

@@ -17,13 +17,18 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: 'User not found' }, { status: 400 });
     }
 
-    user.savedPosts.push(postId);
-    await user.save();
-
-    return NextResponse.json({ message: 'Post saved successfully' }, { status: 200 });
+    if (user.savedPosts.includes(postId)) {
+        user.savedPosts.pull(postId);
+        await user.save();
+        return NextResponse.json({ message: 'Post removed from saved posts' }, { status: 200 });
+    } else {
+        user.savedPosts.push(postId);
+        await user.save();
+        return NextResponse.json({ message: 'Post saved successfully' }, { status: 200 });
+    }
 }
 
-export async function PATCH(req: Request) {
+export async function DELETE(req: Request) {
     const body = await req.json();
     const { userId, postId } = body;
 

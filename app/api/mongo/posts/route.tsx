@@ -67,11 +67,9 @@ export async function PATCH(req: Request) {
         if (!post) {
             return new NextResponse(JSON.stringify({ message: 'Post not found' }), { status: 404 });
         } else {
-            console.log("patch")
-            console.log(post)
+            // console.log("patch")
+            // console.log(post)
         }
-        console.log("dodaje taki głos:")
-        console.log(data.vote)
         if (data.vote !== undefined) {
             switch (data.vote) {
                 case -2:

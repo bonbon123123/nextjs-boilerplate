@@ -1,52 +1,84 @@
 "use client"
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { SessionContext } from '@/app/invisibleComponents/SessionProvider';
 import SmallImage from '@/app/components/SmallImage';
 import Post from '@/app/interfaces/Post';
-
+import ImageGrid from '@/app/components/ImageGrid';
 
 
 const UserPage = () => {
-  const session = useContext(SessionContext);
   const [activeSection, setActiveSection] = useState('added');
   const [addedImages, setAddedImages] = useState([]);
   const [likedImages, setLikedImages] = useState([]);
   const [savedImages, setSavedImages] = useState([]);
-
-  if (!session) {
+  const sessionContext = useContext(SessionContext);
+  if (!sessionContext) {
     throw new Error('Brak dostępu do kontekstu sesji');
   }
 
-  const fetchAddedImages = async () => {
-    // fetch images added by user from database
-    const response = await fetch('/api/images/added');
+  const fetchImages = async (type: string) => {
+    console.log({
+      userId: sessionContext.userId,
+      type: type,
+    })
+    const response = await fetch('/api/mongo/postsSpecial', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: sessionContext.userId,
+        type: type,
+      }),
+    });
     const data = await response.json();
+    return data;
+  };
+
+  useEffect(() => {
+    if (activeSection === "added" || activeSection === "liked" || activeSection === "saved") {
+      handleSectionChange(activeSection);
+    }
+  }, [activeSection]); // Re-fetch images when active section changes
+
+
+  useEffect(() => {
+    if (activeSection === "added" || activeSection === "liked" || activeSection === "saved") {
+      handleSectionChange(activeSection);
+    }
+  }, [sessionContext.savedPosts, sessionContext.votes]);
+
+  const clickAddedImages = async () => {
+    const data = await fetchImages('author');
     setAddedImages(data);
   };
 
-  const fetchLikedImages = async () => {
-    // fetch images liked by user from database
-    const response = await fetch('/api/images/liked');
-    const data = await response.json();
+  const clickLikedImages = async () => {
+    const data = await fetchImages('liked');
     setLikedImages(data);
   };
 
-  const fetchSavedImages = async () => {
-    // fetch images saved by user from database
-    const response = await fetch('/api/images/saved');
-    const data = await response.json();
+  const clickSavedImages = async () => {
+    const data = await fetchImages('saved');
     setSavedImages(data);
   };
 
   const handleSectionChange = (section: 'added' | 'liked' | 'saved') => {
     setActiveSection(section);
+    if (section === 'added') {
+      clickAddedImages();
+    } else if (section === 'liked') {
+      clickLikedImages();
+    } else if (section === 'saved') {
+      clickSavedImages();
+    }
   };
 
   return (
     <div className="h-screen flex flex-col">
       <div className="flex justify-center items-center bg-light p-4 border-b border-light-main sticky top-0">
         <img src="https://via.placeholder.com/50" alt="Profilowe" className="w-12 h-12 rounded-full mr-4" />
-        <h1 className="text-2xl font-bold text-main">{session.userName}</h1>
+        <h1 className="text-2xl font-bold text-main">{sessionContext.userName}</h1>
       </div>
       <div className="flex justify-center items-center bg-light p-4 border-b border-light-main sticky top-14">
         <button
@@ -69,25 +101,19 @@ const UserPage = () => {
         </button>
       </div>
       {activeSection === 'added' && (
-        <div className="flex flex-col p-4">
-          {addedImages.map((image: Post) => (
-            <SmallImage key={image._id} image={image} />
-          ))}
-        </div>
+        <ImageGrid
+          images={addedImages}
+        />
       )}
       {activeSection === 'liked' && (
-        <div className="flex flex-col p-4">
-          {likedImages.map((image: Post) => (
-            <SmallImage key={image._id} image={image} />
-          ))}
-        </div>
+        <ImageGrid
+          images={likedImages}
+        />
       )}
       {activeSection === 'saved' && (
-        <div className="flex flex-col p-4">
-          {savedImages.map((image: Post) => (
-            <SmallImage key={image._id} image={image} />
-          ))}
-        </div>
+        <ImageGrid
+          images={savedImages}
+        />
       )}
     </div>
   );

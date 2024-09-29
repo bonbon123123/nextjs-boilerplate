@@ -42,6 +42,7 @@ export async function POST(req: Request) {
                 username: user.username,
                 role: user.role,
                 votes: user.votes,
+                savedPosts: user.savedPosts,
                 comments: user.comments,
             };
             return NextResponse.json(userData, { status: 200 });

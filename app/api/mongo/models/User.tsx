@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+const VoteSchema = new mongoose.Schema({
+    postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },
+    voteValue: { type: Number, required: true }
+});
+
 const UserSchema = new mongoose.Schema({
     username: String,
     email: String,
@@ -11,15 +16,7 @@ const UserSchema = new mongoose.Schema({
     sessionId: String,
     isActive: Boolean,
     isVerified: Boolean,
-    votes: [
-        {
-            type: mongoose.Schema.Types.Mixed,
-            ref: 'Vote',
-            postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
-            voteValue: { type: Number },
-            createdAt: Date,
-        },
-    ],
+    votes: [VoteSchema],
     savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 }, { timestamps: true });

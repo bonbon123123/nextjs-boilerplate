@@ -1,8 +1,8 @@
 "use client";
+import Post from '@/app/interfaces/Post';
 import React, { useState, useEffect } from 'react';
 import SmallImage from '../../components/SmallImage';
 import BigImage from '../../components/BigImage';
-import Post from '@/app/interfaces/Post';
 
 
 const SearchPage = () => {
