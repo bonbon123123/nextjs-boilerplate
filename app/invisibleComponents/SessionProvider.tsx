@@ -27,13 +27,19 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     const [userId, setUserId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
     const [votes, setVotes] = useState<{ [id: string]: number }>(() => {
-        const votesFromStorage = localStorage.getItem('votes');
-        return votesFromStorage ? JSON.parse(votesFromStorage) : {};
+        if (typeof window !== 'undefined') {
+            const votesFromStorage = localStorage.getItem('votes');
+            return votesFromStorage ? JSON.parse(votesFromStorage) : {};
+        }
+        return {}; // domyślna wartość po stronie serwera
     });
 
     const [savedPosts, setSavedPosts] = useState<Set<string>>(() => {
-        const savedPostsFromStorage = localStorage.getItem('savedPosts');
-        return savedPostsFromStorage ? JSON.parse(savedPostsFromStorage) : {};
+        if (typeof window !== 'undefined') {
+            const savedPostsFromStorage = localStorage.getItem('savedPosts');
+            return savedPostsFromStorage ? new Set(JSON.parse(savedPostsFromStorage)) : new Set();
+        }
+        return new Set(); // domyślna wartość po stronie serwera
     });
 
     useEffect(() => {
@@ -46,7 +52,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         localStorage.setItem('votes', JSON.stringify(votes));
     }, [votes]);
-    
+
     const serializeSavedPosts = (savedPosts: Set<string> | string[]) => {
         if (savedPosts instanceof Set) {
             return JSON.stringify(Array.from(savedPosts));

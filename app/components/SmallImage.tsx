@@ -26,9 +26,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
     const [imageUrl, setImageUrl] = useState(image.url);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageSaved, setImageSaved] = useState(false);
-    const [vote, setVote] = useState(0);
     const [voteFromDb, setVoteFromDb] = useState(0);
-    const [isSaved, setIsSaved] = useState(false);
     const sessionContext = useContext(SessionContext);
 
 
@@ -36,39 +34,18 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
         throw new Error('SessionContext is not provided');
     }
 
-    const { addVote, getVote, addSave, getSave } = sessionContext;
+    const { addVote, getVote, addSave, getSave, votes, savedPosts } = sessionContext;
+
+    const initialVote = getVote(image._id) || 0; // Default to 0 if not found
+    const initialIsSaved = getSave(image._id);
+
+    const [vote, setVote] = useState(initialVote);
+    const [isSaved, setIsSaved] = useState(initialIsSaved);
 
     useEffect(() => {
-        const currentVote = getVote(image._id);
-        if (typeof currentVote === "number") {
-            setVoteFromDb(currentVote);
-        }
-        const currentSave = getSave(image._id);
-
-        if (currentSave) {
-            setIsSaved(true);
-        } else {
-            setIsSaved(false);
-        }
-
-    }, [image._id]);
-
-    useEffect(() => {
-        const currentSave = getSave(image._id);
-        if (currentSave) {
-            setIsSaved(true);
-        }else{
-            setIsSaved(false);
-        }
-    }, [image._id, sessionContext.savedPosts]);
-
-    useEffect(() => {
-        const currentVote = getVote(image._id);
-        if (typeof currentVote === "number") {
-
-            setVote(currentVote);
-        }
-    }, [image._id, sessionContext.votes]);
+        setVote(getVote(image._id) || 0); // Update vote if context changes
+        setIsSaved(getSave(image._id)); // Update save status if context changes
+    }, [votes, savedPosts, image._id]);
 
     const handleSave = async () => {
         if (sessionContext.userId) {

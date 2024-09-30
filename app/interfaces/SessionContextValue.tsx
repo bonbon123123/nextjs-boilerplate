@@ -8,7 +8,7 @@ interface SessionContextValue {
     addVote: (id: string, vote: number) => void;
     getVote: (id: string) => number | null;
     addSave: (id: string) => void;
-    getSave: (id: string) => boolean | null;
+    getSave: (id: string) => boolean;
     savedPosts: Set<string>;
 }
 
