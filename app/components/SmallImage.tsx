@@ -104,7 +104,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
 
     if (image.upvotes != 0) {
         // console.log(sessionContext.userRole)
-        console.log(image)
+        //console.log(image)
         // console.log(image.upvotes - image.downvotes)
     }
 

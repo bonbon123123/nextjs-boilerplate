@@ -103,10 +103,11 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
 
 
     const handleImageError = () => {
-        setImageUrl('https://media.istockphoto.com/id/1472933890/vector/no-image-vector-symbol-missing-available-icon-no-gallery-for-this-moment-placeholder.jpg?s=612x612&w=0&k=20&c=Rdn-lecwAj8ciQEccm0Ep2RX50FCuUJOaEM8qQjiLL0=');
+        setImageUrl('/images/NoImage.png');
     };
 
     const handleImageLoad = () => {
+        setImageUrl(image.url)
         setImageLoaded(true);
     };
 
@@ -129,7 +130,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                     alt={"Big image"}
                     width={image.width}
                     height={image.height}
-                    src={image.url}
+                    src={imageUrl}
                     onError={handleImageError}
                     onLoad={handleImageLoad}
                     className="w-full h-full object-cover"
