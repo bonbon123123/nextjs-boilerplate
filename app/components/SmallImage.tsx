@@ -3,7 +3,6 @@ import Button from './Button';
 import { SessionContext } from '../invisibleComponents/SessionProvider';
 import Image from 'next/image';
 import Post from '../interfaces/Post';
-import NoImage from '../images/NoImage.png';
 
 
 interface Props {
@@ -95,7 +94,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
 
 
     const handleImageError = () => {
-        setImageUrl(NoImage.src);
+        setImageUrl('/images/NoImage.png');
     };
 
     const handleImageLoad = () => {
@@ -146,6 +145,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
                         onError={handleImageError}
                         onLoad={handleImageLoad}
                         className="w-full object-cover"
+                        unoptimized={imageUrl.startsWith('/images/')}
                         onClick={onClick}
                         style={{
                             maxHeight: '100%',
