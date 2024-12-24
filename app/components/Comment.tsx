@@ -5,7 +5,10 @@ import Button from './Button';
 interface CommentSchema {
     _id: string;
     postId: string;
-    userId: string;
+    userId: {
+        _id: string;
+        username: string;
+    } | null;
     parentId: string | null;
     text: string;
     upvotes: number;
@@ -14,6 +17,7 @@ interface CommentSchema {
     updatedAt: Date;
     replies?: CommentSchema[];
 }
+
 
 interface CommentProps {
     comment: CommentSchema;
@@ -32,7 +36,6 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
         setReplies(comment.replies)
     }, [comment]);
 
-    const { userName } = sessionContext;
 
     const handleReplySubmit = () => {
         setIsReplying(false);
@@ -62,7 +65,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
             console.error('Error deleting post:', error);
         }
     };
-
+    console.log(comment)
     return (
         <div className="bg-light-secondary rounded-md p-2 mb-2 border-t-2 border-gray-600 pt-4 w-90">
             {isDeleted ? (
@@ -72,7 +75,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
             ) : (
                 <div>
                     <div className="flex justify-between mb-1">
-                        <span className="text-sm">{userName || 'Anonymous'}</span>
+                        <span className="text-sm">{comment.userId ? comment.userId.username : 'Anonymous'}</span>
                         <span className="text-xs text-gray-500">
                             {new Date(comment.createdAt).toLocaleString()}
                         </span>
@@ -87,7 +90,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
                         >
                             Reply
                         </button>
-                        {comment.userId === sessionContext.userId || sessionContext.userRole === 'admin' ? (
+                        {comment.userId != null && comment.userId._id === sessionContext.userId || sessionContext.userRole === 'admin' ? (
                             <Button onClick={handleDelete}>
                                 Delete
                             </Button>

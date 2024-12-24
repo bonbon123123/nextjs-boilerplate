@@ -67,17 +67,29 @@ export async function GET(req: Request) {
 
     try {
         if (postId) {
-            // Pobieramy wszystkie komentarze dla danego posta
-            const comments = await Comment.find({ postId }).lean() as Comment[];
+            // Pobieramy wszystkie komentarze dla danego posta i dołączamy dane użytkownika
+            const comments = await Comment.find({ postId })
+                .populate('userId', 'username') // Dołączamy tylko pole `username` z modelu User
+                .lean() as Comment[];
+
             const organizedComments = organizeComments(comments);
             return new NextResponse(JSON.stringify(organizedComments), { status: 200 });
-        }
-        else if (parentId) {
+        } else if (parentId) {
             // Pobieramy tylko odpowiedzi na konkretny komentarz
-            const replies = await Comment.find({ parentId }).sort({ createdAt: -1 }).lean();
+            const replies = await Comment.find({ parentId })
+                .sort({ createdAt: -1 })
+                .populate('userId', 'username')
+                .lean();
+
             return new NextResponse(JSON.stringify(replies), { status: 200 });
         } else {
-            const comments = await Comment.find().sort({ createdAt: -1 }).limit(100).lean();
+            // Pobieramy ostatnie 100 komentarzy bez filtra
+            const comments = await Comment.find()
+                .sort({ createdAt: -1 })
+                .limit(100)
+                .populate('userId', 'username') 
+                .lean();
+
             return new NextResponse(JSON.stringify(comments), { status: 200 });
         }
     } catch (error) {
@@ -88,7 +100,6 @@ export async function GET(req: Request) {
         );
     }
 }
-
 
 // {
 //     "postId": "66c637f0b9e4d76888a6ff0e",
