@@ -38,7 +38,6 @@ const CommentSection: React.FC<Props> = ({ image }) => {
         fetch(`/api/mongo/comments?postId=${image._id}`)
             .then(response => response.json())
             .then(data => {
-                console.log(data)
                 setComments(data as CommentSchema[])
             });
     }, [image._id]);

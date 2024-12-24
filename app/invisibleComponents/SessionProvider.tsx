@@ -26,6 +26,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [votes, setVotes] = useState<{ [id: string]: number }>(() => {
         if (typeof window !== 'undefined') {
             const votesFromStorage = localStorage.getItem('votes');
@@ -72,6 +73,10 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         setUserName(userName);
 
 
+        const userRole = localStorage.getItem('userRole');
+        console.log(userRole)
+        setUserRole(userRole);
+
         const votesFromStorage = localStorage.getItem('votes');
         if (votesFromStorage) {
             try {
@@ -108,7 +113,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const sessionIdFromStorage = localStorage.getItem('sessionId');
         if (sessionIdFromStorage && sessionIdFromStorage != "null" && sessionIdFromStorage != "[object Object]") {
-
+            console.log("hello")
             setAll()
         } else {
 
@@ -133,10 +138,12 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             setSessionId(user.sessionId);
             setUserId(user.userId);
             setUserName(user.username);
+            setUserRole(user.role);
             setVotes(votesMap);
             localStorage.setItem('savedPosts', JSON.stringify(user.savedPosts))
             localStorage.setItem('userId', user.userId);
             localStorage.setItem('userName', user.username);
+            localStorage.setItem('userRole', user.role);
             localStorage.setItem('sessionId', user.sessionId);
             localStorage.setItem('votes', JSON.stringify(votesMap));
         }
@@ -146,11 +153,13 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         setSessionId(null);
         setUserId(null);
         setUserName(null);
+        setUserRole(null);
         setVotes({});
         setSavedPosts(new Set<string>());
         localStorage.removeItem('userId');
         localStorage.removeItem('userName');
         localStorage.removeItem('sessionId');
+        localStorage.removeItem('userRole');
         localStorage.removeItem('votes');
         localStorage.removeItem('comments');
         localStorage.removeItem('savedPosts');
@@ -262,6 +271,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             sessionId,
             userId,
             userName,
+            userRole,
             login,
             logout,
             votes,

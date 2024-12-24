@@ -25,7 +25,8 @@ export async function POST(req: Request) {
     await dbConnect();
 
     try {
-        const { username, password, email } = await req.json();
+        
+        const { username, password, email, role } = await req.json();
 
         if (!username) {
             return NextResponse.json({ message: 'Username is required' }, { status: 400 });
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
         if (!password) {
             return NextResponse.json({ message: 'Password is required' }, { status: 400 });
         }
+        const userRole = role || "user";
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
                 username: username,
                 password: hashedPassword,
                 email: email,
-                role: "user",
+                role: userRole,
                 isActive: false,
                 isVerified: false
             });

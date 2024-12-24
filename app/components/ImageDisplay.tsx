@@ -50,6 +50,20 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ image, onImageSubmit }) => 
         setNewTag('');
     };
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Enter') {
+                handleAddTag(image);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [newTag, image, imagesWithTag]);
+
     const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNewTag(e.target.value);
     };

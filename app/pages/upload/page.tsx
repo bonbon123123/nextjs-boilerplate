@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import ImageDisplay from '../../components/ImageDisplay';
 import Button from '../../components/Button';
@@ -24,17 +24,30 @@ const UploadPage = () => {
     multiple: true,
   });
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'ArrowLeft') {
-      setCurrentIndex(Math.max(0, currentIndex - 1));
-    } else if (event.key === 'ArrowRight') {
-      if (currentIndex === files.length - 1) {
-        setCurrentIndex(0);
-      } else {
-        setCurrentIndex(Math.min(files.length - 1, currentIndex + 1));
-      }
-    }
-  };
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+
+        if (currentIndex === 0) {
+          setCurrentIndex(files.length - 1);
+        } else {
+          setCurrentIndex(Math.max(0, currentIndex - 1));
+        }
+      } else if (event.key === 'ArrowRight') {
+        if (currentIndex === files.length - 1) {
+          setCurrentIndex(0);
+        } else {
+          setCurrentIndex(Math.min(files.length - 1, currentIndex + 1));
+        }
+      } 
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentIndex, files.length]);
 
   return (
     <div className="mx-auto p-4">

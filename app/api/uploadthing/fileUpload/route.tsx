@@ -2,6 +2,12 @@
 import { utapi } from "@/utils/uploadthing";
 import { NextResponse } from "next/server";
 
+// let files
+// export async function start() {
+//     files = await utapi.listFiles();
+//     console.log(files);
+// }
+// start() potencjalne zapobieganie duplikatom
 
 export async function POST(req: Request) {
     try {
@@ -68,6 +74,33 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Error uploading files" });
     }
 }
+
+export async function DELETE(req: Request) {
+    try {
+        const { imageURLs } = await req.json();
+        const prefix: string = "https://utfs.io/f/";
+
+        const trimmedImageURLs = imageURLs.map((url: string) => {
+            // Sprawdzenie, czy URL zaczyna się od prefiksu
+            if (url.startsWith(prefix)) {
+                // Usunięcie prefiksu
+                return url.slice(prefix.length);
+            }
+            return url; // Zwróć oryginalny URL, jeśli nie zaczyna się od prefiksu
+        });
+
+        if (!imageURLs) {
+            throw new Error("No imageURLs for uploadThing to delete");
+        }
+        await utapi.deleteFiles(trimmedImageURLs);
+        return NextResponse.json({ message: "Files deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: "Error deleting files" });
+    }
+}
+
+
 
 export async function GET() {
 

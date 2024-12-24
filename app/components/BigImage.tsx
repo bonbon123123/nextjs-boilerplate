@@ -4,23 +4,10 @@ import CommentSection from './CommentSection';
 import CommentForm from './CommentForm';
 import { SessionContext } from '../invisibleComponents/SessionProvider';
 import Image from 'next/image';
+import Post from '../interfaces/Post';
 
 interface Props {
-    image: {
-        url: string;
-        tags: Array<string>;
-        upvotes: number;
-        downvotes: number;
-        createdAt: Date;
-        updatedAt: Date;
-        width: number;
-        height: number;
-        locked: Boolean;
-        name: string;
-        size: number;
-        type: string;
-        _id: string;
-    };
+    image: Post;
     onClose?: () => void;
 }
 
@@ -42,8 +29,13 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
 
     const handleCommentOn = () => {
         setShowCommentForm(!showCommentForm);
-        console.log(image._id)
+
     };
+
+    const handleReplySubmit = () => {
+        setShowCommentForm(false)
+    };
+
 
     useEffect(() => {
         const currentVote = getVote(image._id);
@@ -127,7 +119,7 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                 className="bg-secondary w-1/5 h-full overflow-y-auto flex flex-col justify-center items-center"
 
             >
-                {/* content 1 */}
+
             </div>
             <div
                 className="w-3/5 h-full overflow-y-auto flex flex-col justify-center items-center bg-main"
@@ -197,7 +189,13 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
                     <div
                         className=" h-[200px] bg-slate-500 "
                     >
-                        <CommentForm image={image} />
+                        <CommentForm
+                            parentId={"null"}
+                            postId={image._id}
+                            onSubmit={handleReplySubmit}
+                            userId={sessionContext.userId}
+                            onCancel={() => setShowCommentForm(false)}
+                        />
                     </div>
                 )}
                 <CommentSection image={image} />

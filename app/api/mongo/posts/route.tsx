@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Post from "../models/Post";
+import User from "../models/User";
 import dbConnect from "../db";
 
 export async function GET(req: Request) {
@@ -102,5 +103,59 @@ export async function PATCH(req: Request) {
     } catch (error) {
         console.error('Error updating post:', error);
         return new NextResponse(JSON.stringify({ message: 'Error updating post', error }), { status: 500 });
+    }
+}
+
+export async function DELETE(req: Request) {
+    await dbConnect();
+    try {
+        const { postId, userId, imageUrl } = await req.json(); // Odbierz postId i userId z żądania
+
+        if (!postId || !userId || !imageUrl) {
+            return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
+        }
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            return NextResponse.json({ message: 'Post not found' }, { status: 404 });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return NextResponse.json({ message: 'User  not found' }, { status: 404 });
+        }
+
+        // Sprawdź, czy użytkownik jest administratorem lub właścicielem postu
+        if (user.role !== 'admin' && post.userId.toString() !== userId) {
+            return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+        }
+
+        try {
+            const url = new URL('/api/uploadthing/fileUpload', req.url);
+            const responseUploadthing = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(
+                    {
+                        imageURLs: [imageUrl]
+                    }
+                ),
+            });
+            const data = await responseUploadthing.json();
+            console.log(data);
+            // Usuń post
+            await Post.findByIdAndDelete(postId);
+
+            return NextResponse.json({ message: 'Post deleted successfully' }, { status: 200 });
+        } catch (error) {
+            console.error(error);
+            return NextResponse.json({ error: "Error uploading files" });
+        }
+
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        return NextResponse.json({ message: 'Error deleting post', error }, { status: 500 });
     }
 }

@@ -16,6 +16,7 @@ interface Post {
     height: number;
     name: string;
     size: number;
+    userId: string;
     type: string;
 }
 

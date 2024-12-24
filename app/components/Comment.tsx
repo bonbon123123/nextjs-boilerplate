@@ -1,5 +1,6 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { SessionContext } from '../invisibleComponents/SessionProvider';
+import CommentForm from './CommentForm';
 
 interface CommentSchema {
     _id: string;
@@ -11,6 +12,7 @@ interface CommentSchema {
     downvotes: number;
     createdAt: Date;
     updatedAt: Date;
+    replies?: CommentSchema[];
 }
 
 interface CommentProps {
@@ -19,40 +21,54 @@ interface CommentProps {
 
 const Comment: React.FC<CommentProps> = ({ comment }) => {
     const [replies, setReplies] = useState<CommentSchema[]>();
-    const [userName, setUserName] = useState<string>('');
+    const [isReplying, setIsReplying] = useState(false);
+    const sessionContext = useContext(SessionContext);
 
+    if (!sessionContext) {
+        throw new Error('SessionContext is not provided');
+    }
     useEffect(() => {
-        fetch(`/api/mongo/comments?parentId=${comment._id}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data)
-                setReplies(data as CommentSchema[])
-            });
-    }, [comment._id]);
+        setReplies(comment.replies)
+    }, [comment]);
 
+    const { userName } = sessionContext;
 
-    useEffect(() => {
-
-        const fetchUserName = (userId: string) => {
-            return `User ${Math.floor(Math.random() * 100)}`;
-        };
-        setUserName(fetchUserName(comment.userId));
-    }, [comment.userId]);
+    const handleReplySubmit = () => {
+        setIsReplying(false);
+        
+    };
 
     return (
-        <div
-            className="bg-light-secondary rounded-md p-2 mb-2 border-t-2 border-gray-600 pt-10 w-90"
-        >
+        <div className="bg-light-secondary rounded-md p-2 mb-2 border-t-2 border-gray-600 pt-4 w-90">
             <div className="flex justify-between mb-1">
                 <span className="text-sm">{userName || 'Anonymous'}</span>
-                <span className="text-xs text-gray-500">{comment.createdAt.toLocaleString()}</span>
+                <span className="text-xs text-gray-500">
+                    {new Date(comment.createdAt).toLocaleString()}
+                </span>
             </div>
-            <div className="text-sm break-words overflow-hidden text-ellipsis">
+            <div className="text-sm break-words overflow-hidden text-ellipsis mb-2">
                 {comment.text}
             </div>
-            {replies != null && (
-                <div className="ml-4">
-                    {replies?.map((reply, index) => (
+            <div className="flex gap-2 mb-2">
+                <button
+                    onClick={() => setIsReplying(!isReplying)}
+                    className="text-xs text-blue-500 hover:text-blue-600"
+                >
+                    Reply
+                </button>
+            </div>
+            {isReplying && (
+                <CommentForm
+                    parentId={comment._id}
+                    postId={comment.postId}
+                    onSubmit={handleReplySubmit}
+                    userId={sessionContext.userId}
+                    onCancel={() => setIsReplying(false)}
+                />
+            )}
+            {replies && replies.length > 0 && (
+                <div className="ml-4 border-l-2 border-gray-600 pl-2">
+                    {replies.map((reply, index) => (
                         <Comment key={index} comment={reply} />
                     ))}
                 </div>
