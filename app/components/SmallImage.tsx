@@ -106,63 +106,76 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
   }
 
   return (
-    <div className="overflow-hidden" style={{ maxHeight: "calc(100vw / 2)" }}>
+    <div
+      className="overflow-hidden shadow-lg rounded-xl mb-4 border border-base-300 bg-base-100"
+      style={{ maxHeight: "calc(100vw / 2)" }}
+    >
       {isDeleted ? (
-        <div className="flex justify-center items-center h-full">
+        <div className="flex justify-center items-center h-full py-10">
           <span className="text-lg">Image was Deleted</span>
         </div>
       ) : (
-        <div>
-          <div className="w-full">
-            <Image
-              alt={"Small image"}
-              width={image.width}
-              height={image.height}
-              src={imageUrl}
-              onError={handleImageError}
-              onLoad={handleImageLoad}
-              className="w-full object-cover cursor-pointer rounded"
-              unoptimized={imageUrl.startsWith("/images/")}
-              onClick={onClick}
-              style={{ maxHeight: "60vh", width: "100%", height: "auto" }}
-            />
+        <div className="w-full">
+          {/* Image*/}
+          <Image
+            alt="Small image"
+            width={image.width}
+            height={image.height}
+            src={imageUrl}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+            className="w-full object-cover cursor-pointer"
+            unoptimized={imageUrl.startsWith("/images/")}
+            onClick={onClick}
+            style={{ maxHeight: "60vh", width: "100%", height: "auto" }}
+          />
 
-            {/* tags bar under image, horizontal scroll */}
-            <div className="w-full overflow-x-auto mt-2 py-1">
-              <div className="flex gap-2 whitespace-nowrap">
-                {image.tags?.map((tag, index) => (
-                  <span key={index} className="tag inline-block">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+          {/*  TAGS */}
+          <div className="w-full h-8 flex items-center overflow-x-auto border-t border-base-300 bg-base-200 px-2">
+            <div className="flex gap-2 whitespace-nowrap items-center">
+              {image.tags?.map((tag, index) => (
+                <span key={index} className="tag">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* BUTTONS  */}
+          <div className="w-full h-10 flex items-center justify-between gap-2 px-2 border-t border-base-300 bg-base-200">
+            <div className="flex gap-2">
+              {(image.userId === sessionContext.userId ||
+                sessionContext.userRole === "admin") && (
+                <Button onClick={handleDelete} className="btn-ghost btn-xs">
+                  Delete
+                </Button>
+              )}
             </div>
 
-            {/* buttons row under tags */}
-            <div className="w-full flex items-center justify-between gap-2 mt-2">
-              <div className="flex gap-2">
-                {image.userId === sessionContext.userId ||
-                sessionContext.userRole === "admin" ? (
-                  <Button onClick={handleDelete} className="btn-ghost">
-                    Delete
-                  </Button>
-                ) : null}
-              </div>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleSave} clicked={isSaved} className="btn-xs">
+                Save
+              </Button>
 
-              <div className="flex items-center gap-2">
-                <Button onClick={handleSave} clicked={isSaved}>
-                  Save
-                </Button>
-                <Button onClick={handleUpvote} clicked={vote == 1}>
-                  ↑
-                </Button>
-                <span className="vote-display text-sm">
-                  {image.upvotes - image.downvotes + vote - voteFromDb}
-                </span>
-                <Button onClick={handleDownvote} clicked={vote == -1}>
-                  ↓
-                </Button>
-              </div>
+              <Button
+                onClick={handleUpvote}
+                clicked={vote === 1}
+                className="btn-xs"
+              >
+                ↑
+              </Button>
+
+              <span className="text-sm">
+                {image.upvotes - image.downvotes + vote - voteFromDb}
+              </span>
+
+              <Button
+                onClick={handleDownvote}
+                clicked={vote === -1}
+                className="btn-xs"
+              >
+                ↓
+              </Button>
             </div>
           </div>
         </div>
