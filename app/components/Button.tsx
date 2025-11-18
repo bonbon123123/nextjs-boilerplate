@@ -18,16 +18,11 @@ const Button: React.FC<ButtonProps> = ({
   clicked,
   ...props
 }) => {
-  const hoverClassName = clicked ? "bg-light-secondary text-white" : "";
-  const defaultClassName = clicked ? "" : "bg-secondary";
+  const activeClassName = clicked ? "btn-active" : "";
   return (
     <button
-      className={`${defaultClassName} ${hoverClassName}hover:bg-light-secondary hover:text-white text-dark  py-2 px-4 rounded-lg border-dark hover:border-light w-auto ${className}`}
-      style={{
-        minWidth: 120,
-        minHeight: 40,
-        ...style,
-      }}
+      className={`btn btn-sm btn-primary ${activeClassName} ${className || ""}`}
+      style={style}
       onClick={onClick}
       disabled={disabled}
       {...props}

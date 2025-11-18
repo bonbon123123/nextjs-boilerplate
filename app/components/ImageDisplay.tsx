@@ -31,7 +31,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       setImageWidth(img.width);
       setImageHeight(img.height);
       const existingImageWithTag = imagesWithTag.find(
-        (img) => img.image === image,
+        (img) => img.image === image
       );
       if (existingImageWithTag) {
         existingImageWithTag.width = img.width;
@@ -45,7 +45,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   const handleAddTag = (image: File) => {
     const trimmedNewTag = newTag.trim();
     const existingImageWithTag = imagesWithTag.find(
-      (img) => img.image === image,
+      (img) => img.image === image
     );
     if (existingImageWithTag) {
       existingImageWithTag.tags.push(trimmedNewTag);
@@ -90,7 +90,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
     try {
       setImagesWithTag((prevImages) =>
-        prevImages.filter((img) => img.image !== image),
+        prevImages.filter((img) => img.image !== image)
       );
       onImageSubmit(image);
       const response = await fetch("/api/uploadthing/fileUpload", {
@@ -109,44 +109,44 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   const tags = imageWithTag ? imageWithTag.tags : [];
 
   return (
-    <div className="bg-main w-[66vw] h-[85vh] flex flex-col items-center">
-      <div className="w-[100%] h-[85%] flex center justify-center items-center">
+    <div className="bg-base-200 w-full md:w-[66vw] h-[85vh] flex flex-col items-center card shadow-lg">
+      <div className="w-full h-[75%] flex justify-center items-center p-4">
         <Image
           src={URL.createObjectURL(image)}
           width={imageWidth}
           height={imageHeight}
           alt={image.name}
-          className="max-w-[100%] max-h-[100%] object-contain"
+          className="max-w-full max-h-full object-contain"
         />
       </div>
 
-      <div className="bg-light-main w-[100%] h-[15%] flex center flex-col justify-center items-center p-2.5">
-        <div className="bg-light w-[100%] rounded-lg h-[30%] flex center flex-row justify-center items-center">
-          {tags.map((tag, index) => (
-            <span
-              key={index}
-              className="bg-secondary p-1 h-[80%] rounded-lg mr-2.5"
-            >
-              {"#"}
-              {tag}
-            </span>
-          ))}
+      {/* tags bar under image */}
+      <div className="w-full py-2">
+        <div className="overflow-x-auto">
+          <div className="flex gap-2 whitespace-nowrap px-2">
+            {tags.map((tag, index) => (
+              <span key={index} className="tag inline-block">
+                #{tag}
+              </span>
+            ))}
+          </div>
         </div>
-        <div className="w-[100%] h-[30%]  flex center">
-          <input
-            type="text"
-            value={newTag}
-            onChange={handleTagChange}
-            className="w-full h-[100%] p-2.5 text-lg border-none rounded-lg shadow-md"
-          />
-          <Button onClick={() => handleAddTag(image)} disabled={!newTag.trim()}>
-            Dodaj tag
-          </Button>
-        </div>
-        <div className="w-[100%] h-[30%]  flex justify-end">
-          <Button style={{ alignSelf: "flex-end" }} onClick={handleSubmit}>
-            Submit
-          </Button>
+      </div>
+
+      {/* bottom controls */}
+      <div className="w-full flex items-center gap-2 py-2">
+        <input
+          type="text"
+          value={newTag}
+          onChange={handleTagChange}
+          className="input input-bordered flex-1 text-sm"
+          placeholder="Add tag..."
+        />
+        <Button onClick={() => handleAddTag(image)} disabled={!newTag.trim()}>
+          Add
+        </Button>
+        <div className="ml-auto">
+          <Button onClick={handleSubmit}>Submit</Button>
         </div>
       </div>
     </div>

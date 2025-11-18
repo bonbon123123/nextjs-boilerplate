@@ -64,28 +64,26 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
   };
   console.log(comment);
   return (
-    <div className="bg-light-secondary rounded-md p-2 mb-2 border-t-2 border-gray-600 pt-4 w-90">
+    <div className="comment-container">
       {isDeleted ? (
         <div className="flex justify-center items-center h-full">
           <span className="text-lg">Comment was Deleted</span>
         </div>
       ) : (
         <div>
-          <div className="flex justify-between mb-1">
-            <span className="text-sm">
+          <div className="comment-header">
+            <span className="comment-username">
               {comment.userId ? comment.userId.username : "Anonymous"}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="comment-timestamp">
               {new Date(comment.createdAt).toLocaleString()}
             </span>
           </div>
-          <div className="text-sm break-words overflow-hidden text-ellipsis mb-2">
-            {comment.text}
-          </div>
-          <div className="flex gap-2 mb-2">
+          <div className="comment-text">{comment.text}</div>
+          <div className="comment-actions">
             <button
               onClick={() => setIsReplying(!isReplying)}
-              className="text-xs text-blue-500 hover:text-blue-600"
+              className="text-sm text-primary hover:text-primary-focus cursor-pointer"
             >
               Reply
             </button>
@@ -105,7 +103,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
             />
           )}
           {replies && replies.length > 0 && (
-            <div className="ml-4 border-l-2 border-gray-600 pl-2">
+            <div className="ml-4 mt-2 border-l-2 border-primary pl-2">
               {replies.map((reply, index) => (
                 <Comment key={index} comment={reply} />
               ))}

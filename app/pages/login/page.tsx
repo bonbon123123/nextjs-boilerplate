@@ -26,37 +26,44 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="h-screen flex justify-center items-center bg-light">
-      <div className="max-w-md w-full p-4 bg-white rounded shadow-md border border-light-main">
-        <h1 className="text-3xl font-bold mb-4 text-main">Logowanie</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col">
-          <label className="block mb-2">
-            Nazwa użytkownika:
+    <div className="min-h-screen flex justify-center items-center bg-base-100">
+      <div className="card w-full max-w-md shadow-xl bg-base-200">
+        <form onSubmit={handleSubmit} className="card-body">
+          <h1 className="card-title text-2xl mb-4">Logowanie</h1>
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Nazwa użytkownika:</span>
+            </label>
             <input
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              className="w-full p-2 pl-10 text-sm text-dark border border-light-main rounded"
+              className="input input-bordered"
+              placeholder="Wpisz nazwę użytkownika"
             />
-          </label>
-          <br />
-          <label className="block mb-2">
-            Hasło:
+          </div>
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Hasło:</span>
+            </label>
             <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full p-2 pl-10 text-sm text-dark border border-light-main rounded"
+              className="input input-bordered"
+              placeholder="Wpisz hasło"
             />
-          </label>
-          <br />
-          <button
-            type="submit"
-            className="bg-main hover:bg-light-main text-white font-bold py-2 px-4 rounded"
-          >
-            Zaloguj się
-          </button>
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          </div>
+
+          {error && <p className="text-error text-sm">{error}</p>}
+
+          <div className="form-control mt-6">
+            <button type="submit" className="btn btn-primary">
+              Zaloguj się
+            </button>
+          </div>
         </form>
       </div>
     </div>

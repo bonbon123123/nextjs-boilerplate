@@ -4,13 +4,17 @@ import Comment from "./Comment";
 interface CommentSchema {
   _id: string;
   postId: string;
-  userId: string;
+  userId: {
+    _id: string;
+    username: string;
+  } | null;
   parentId: string | null;
   text: string;
   upvotes: number;
   downvotes: number;
   createdAt: Date;
   updatedAt: Date;
+  replies?: CommentSchema[];
 }
 
 interface Props {
@@ -43,7 +47,7 @@ const CommentSection: React.FC<Props> = ({ image }) => {
   }, [image._id]);
 
   return (
-    <div className="w-full h-full bg-secondary">
+    <div className="w-full h-full bg-base-200 p-2 overflow-y-auto">
       {comments?.map((comment, index) => (
         <Comment comment={comment} key={index} />
       ))}

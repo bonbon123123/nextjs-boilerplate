@@ -18,25 +18,78 @@ export default function MainPage() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1>Main</h1>
-      <p>Sesja ID: {sessionId}</p>
-      <p>
-        Użytkownik: {userName ? JSON.stringify(userName) : "Nie zalogowany"}
-      </p>
-      <p>
-        Użytkownika ID: {userId ? JSON.stringify(userId) : "Nie zalogowany"}
-      </p>
-      <h2>Głosy:</h2>
-      <ul>
-        {Object.keys(votes).map((id, index) => (
-          <li key={index}>
-            <p>ID: {id}</p>
-            <p>Głos: {votes[id]}</p>
-          </li>
-        ))}
-      </ul>
-      <DropImageUploader />
+    <main className="min-h-screen bg-base-100 px-4 md:px-8 py-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-5xl font-bold mb-8 text-base-content">
+          Welcome to Specs
+        </h1>
+
+        <div className="card bg-base-200 shadow-lg mb-8 p-6">
+          <h2 className="text-2xl font-semibold mb-4">Session Information</h2>
+          <div className="space-y-2 text-base-content">
+            <p>
+              <span className="font-semibold">Session ID:</span>{" "}
+              {sessionId || "Not available"}
+            </p>
+            <p>
+              <span className="font-semibold">User:</span>{" "}
+              {userName ? userName : "Not logged in"}
+            </p>
+            <p>
+              <span className="font-semibold">User ID:</span>{" "}
+              {userId ? userId : "Not logged in"}
+            </p>
+          </div>
+        </div>
+
+        {Object.keys(votes).length > 0 && (
+          <div className="card bg-base-200 shadow-lg mb-8 p-6">
+            <h2 className="text-2xl font-semibold mb-4">Your Votes</h2>
+            <div className="overflow-x-auto">
+              <table className="table table-sm w-full">
+                <thead>
+                  <tr className="border-b border-base-300">
+                    <th className="text-base-content">Post ID</th>
+                    <th className="text-base-content">Vote</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.keys(votes).map((id, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-base-300 hover:bg-base-300"
+                    >
+                      <td className="text-sm">{id}</td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            votes[id] === 1
+                              ? "badge-success"
+                              : votes[id] === -1
+                              ? "badge-error"
+                              : "badge-neutral"
+                          }`}
+                        >
+                          {votes[id] === 1
+                            ? "👍"
+                            : votes[id] === -1
+                            ? "👎"
+                            : "○"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        <div className="card bg-base-200 shadow-lg p-6">
+          <h2 className="text-2xl font-semibold mb-4">Upload Images</h2>
+          <DropImageUploader />
+        </div>
+      </div>
     </main>
   );
 }

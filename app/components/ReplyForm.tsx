@@ -15,9 +15,11 @@ const ReplyForm: React.FC<ReplyFormProps> = ({
   onCancel,
 }) => {
   const [replyText, setReplyText] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const response = await fetch("/api/mongo/comments", {
@@ -41,6 +43,8 @@ const ReplyForm: React.FC<ReplyFormProps> = ({
       }
     } catch (error) {
       console.error("Error posting reply:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,21 +53,22 @@ const ReplyForm: React.FC<ReplyFormProps> = ({
       <textarea
         value={replyText}
         onChange={(e) => setReplyText(e.target.value)}
-        className="w-full p-2 text-sm bg-light-secondary border border-gray-600 rounded"
+        className="textarea textarea-bordered w-full text-sm bg-base-100"
         placeholder="Write your reply..."
         rows={3}
       />
       <div className="flex gap-2 mt-2">
         <button
           type="submit"
-          className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="btn btn-sm btn-primary"
+          disabled={loading}
         >
-          Submit
+          {loading ? "Submitting..." : "Submit"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
+          className="btn btn-sm btn-neutral"
         >
           Cancel
         </button>

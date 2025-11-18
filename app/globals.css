@@ -5,8 +5,8 @@
 :root {
   --main: rgba(119, 51, 68, 1);
   --light-main: rgba(171, 73, 98, 1);
-  --secondary: rgba(69, 111, 32, 1);
-  --light-secondary: rgba(96, 153, 45, 1);
+  --secondary: rgba(171, 73, 98, 1);
+  --light-secondary: rgba(171, 73, 98, 0.85);
   --light: rgba(195, 223, 224, 1);
   --dark: rgba(2, 24, 43, 1);
   --black: rgba(0, 0, 0, 1);
@@ -22,9 +22,6 @@
 }
 
 body {
-  color: rgb(var(--black));
-  background-image: linear-gradient(to bottom, var(--white), var(--white));
-  height: 100vh;
   margin: 0;
   padding: 0;
 }
@@ -33,4 +30,50 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.tag {
+  @apply badge badge-sm badge-primary gap-2 text-primary-content font-semibold;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50;
+}
+
+.modal-content {
+  @apply bg-base-100 rounded-lg shadow-lg;
+}
+
+.loading-text {
+  @apply text-center text-lg font-semibold text-base-content;
+}
+
+.vote-display {
+  @apply badge badge-md bg-primary text-primary-content font-bold;
+}
+
+.comment-container {
+  @apply bg-base-200 rounded-md p-3 mb-2 border-l-4 border-primary;
+}
+
+.comment-header {
+  @apply flex justify-between mb-2 text-sm;
+}
+
+.comment-username {
+  @apply font-semibold text-base-content;
+}
+
+.comment-timestamp {
+  @apply text-xs text-base-content opacity-60;
+}
+
+.comment-text {
+  @apply text-sm break-words mb-2;
+}
+
+.comment-actions {
+  @apply flex gap-2;
 }

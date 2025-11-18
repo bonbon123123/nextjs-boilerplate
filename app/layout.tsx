@@ -20,10 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <SessionProvider>
-      <html lang="en">
-        <body className={inter.className}>
+      <html lang="en" data-theme="dark">
+        <body className={`${inter.className} bg-base-100 min-h-screen`}>
           <NavBar />
-          {children}
+          <main className="px-6 md:px-12 lg:px-24 py-6">
+            <div className="w-full">{children}</div>
+          </main>
         </body>
       </html>
     </SessionProvider>

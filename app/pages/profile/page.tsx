@@ -81,40 +81,48 @@ const UserPage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="flex justify-center items-center bg-light p-4 border-b border-light-main sticky top-0">
-        <img
-          src="https://via.placeholder.com/50"
-          alt="Profilowe"
-          className="w-12 h-12 rounded-full mr-4"
-        />
-        <h1 className="text-2xl font-bold text-main">
-          {sessionContext.userName}
-        </h1>
-      </div>
-      <div className="flex justify-center items-center bg-light p-4 border-b border-light-main sticky top-14">
-        <button
-          className={`w-1/3 py-2 text-sm text-dark ${activeSection === "added" ? "bg-main text-white" : "bg-white border border-light-main"}`}
-          onClick={() => handleSectionChange("added")}
-        >
-          Dodane
-        </button>
-        <button
-          className={`w-1/3 py-2 text-sm text-dark ${activeSection === "liked" ? "bg-main text-white" : "bg-white border border-light-main"}`}
-          onClick={() => handleSectionChange("liked")}
-        >
-          Polubione
-        </button>
-        <button
-          className={`w-1/3 py-2 text-sm text-dark ${activeSection === "saved" ? "bg-main text-white" : "bg-white border border-light-main"}`}
-          onClick={() => handleSectionChange("saved")}
-        >
-          Zapisane
-        </button>
-      </div>
-      {activeSection === "added" && <ImageGrid images={addedImages} />}
-      {activeSection === "liked" && <ImageGrid images={likedImages} />}
-      {activeSection === "saved" && <ImageGrid images={savedImages} />}
+    <div className="min-h-screen bg-base-100">
+      <main className="px-4 md:px-8 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-center items-center p-4 border-b border-base-300">
+            <div className="avatar">
+              <div className="w-12 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                {sessionContext.userName?.charAt(0).toUpperCase()}
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-base-content ml-4">
+              {sessionContext.userName}
+            </h1>
+          </div>
+
+          <div className="tabs tabs-bordered">
+            <button
+              className={`tab ${activeSection === "added" ? "tab-active" : ""}`}
+              onClick={() => handleSectionChange("added")}
+            >
+              Dodane
+            </button>
+            <button
+              className={`tab ${activeSection === "liked" ? "tab-active" : ""}`}
+              onClick={() => handleSectionChange("liked")}
+            >
+              Polubione
+            </button>
+            <button
+              className={`tab ${activeSection === "saved" ? "tab-active" : ""}`}
+              onClick={() => handleSectionChange("saved")}
+            >
+              Zapisane
+            </button>
+          </div>
+
+          <div className="mt-4">
+            {activeSection === "added" && <ImageGrid images={addedImages} />}
+            {activeSection === "liked" && <ImageGrid images={likedImages} />}
+            {activeSection === "saved" && <ImageGrid images={savedImages} />}
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

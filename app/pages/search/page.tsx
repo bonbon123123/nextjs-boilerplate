@@ -51,31 +51,39 @@ const SearchPage = () => {
   };
 
   return (
-    <div>
-      <div className="search-bar">
-        <input
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="Search for tags"
-        />
-        <button onClick={handleSearch}>Search</button>
-      </div>
-      <div className="w-100% flex ">
+    <div className="min-h-screen bg-base-100 px-4 md:px-8 py-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex gap-2 p-4 bg-base-200 rounded-lg shadow-md mb-6">
+          <input
+            type="text"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="Search for tags..."
+            className="input input-bordered flex-1"
+          />
+          <button onClick={handleSearch} className="btn btn-primary">
+            Search
+          </button>
+        </div>
+
         {loading ? (
-          <p>Loading...</p>
+          <div className="flex justify-center items-center min-h-96">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+          </div>
         ) : (
-          columns.map((column, index) => (
-            <div key={index} className="w-1/4">
-              {column.map((image, index) => (
-                <SmallImage
-                  key={index}
-                  image={image}
-                  onClick={() => handleImageClick(image)}
-                />
-              ))}
-            </div>
-          ))
+          <div className="w-full flex gap-4">
+            {columns.map((column, index) => (
+              <div key={index} className="w-1/4">
+                {column.map((image, index) => (
+                  <SmallImage
+                    key={index}
+                    image={image}
+                    onClick={() => handleImageClick(image)}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
         )}
       </div>
       {selectedImage && (
