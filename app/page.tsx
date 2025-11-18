@@ -5,13 +5,12 @@ import { useContext, useState, useEffect } from "react";
 import { SessionContext } from "./invisibleComponents/SessionProvider";
 const f = createUploadthing();
 
-
 export default function MainPage() {
   const { sessionId, userName, userId } = useContext(SessionContext) || {};
   const [votes, setVotes] = useState<{ [id: string]: number }>({});
 
   useEffect(() => {
-    const votesFromStorage = localStorage.getItem('votes');
+    const votesFromStorage = localStorage.getItem("votes");
     if (votesFromStorage) {
       const votes = JSON.parse(votesFromStorage);
       setVotes(votes);
@@ -22,8 +21,12 @@ export default function MainPage() {
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <h1>Main</h1>
       <p>Sesja ID: {sessionId}</p>
-      <p>Użytkownik: {userName ? JSON.stringify(userName) : 'Nie zalogowany'}</p>
-      <p>Użytkownika ID: {userId ? JSON.stringify(userId) : 'Nie zalogowany'}</p>
+      <p>
+        Użytkownik: {userName ? JSON.stringify(userName) : "Nie zalogowany"}
+      </p>
+      <p>
+        Użytkownika ID: {userId ? JSON.stringify(userId) : "Nie zalogowany"}
+      </p>
       <h2>Głosy:</h2>
       <ul>
         {Object.keys(votes).map((id, index) => (

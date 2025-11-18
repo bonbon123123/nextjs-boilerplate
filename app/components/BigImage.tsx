@@ -1,212 +1,190 @@
-import React, { useState, useEffect, useContext } from 'react';
-import Button from './Button';
-import CommentSection from './CommentSection';
-import CommentForm from './CommentForm';
-import { SessionContext } from '../invisibleComponents/SessionProvider';
-import Image from 'next/image';
-import Post from '../interfaces/Post';
+import React, { useState, useEffect, useContext } from "react";
+import Button from "./Button";
+import CommentSection from "./CommentSection";
+import CommentForm from "./CommentForm";
+import { SessionContext } from "../invisibleComponents/SessionProvider";
+import Image from "next/image";
+import Post from "../interfaces/Post";
 
 interface Props {
-    image: Post;
-    onClose?: () => void;
+  image: Post;
+  onClose?: () => void;
 }
 
 const BigImage: React.FC<Props> = ({ image, onClose }) => {
-    const [imageUrl, setImageUrl] = useState(image.url);
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const [vote, setVote] = useState(0);
-    const [showCommentForm, setShowCommentForm] = useState(false);
-    const [voteFromDb, setVoteFromDb] = useState(0);
-    const [isSaved, setIsSaved] = useState(false);
+  const [imageUrl, setImageUrl] = useState(image.url);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [vote, setVote] = useState(0);
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [voteFromDb, setVoteFromDb] = useState(0);
+  const [isSaved, setIsSaved] = useState(false);
 
-    const sessionContext = useContext(SessionContext);
+  const sessionContext = useContext(SessionContext);
 
-    if (!sessionContext) {
-        throw new Error('SessionContext is not provided');
+  if (!sessionContext) {
+    throw new Error("SessionContext is not provided");
+  }
+
+  const { addVote, getVote, addSave, getSave } = sessionContext;
+
+  const handleCommentOn = () => {
+    setShowCommentForm(!showCommentForm);
+  };
+
+  const handleReplySubmit = () => {
+    setShowCommentForm(false);
+  };
+
+  useEffect(() => {
+    const currentVote = getVote(image._id);
+    if (typeof currentVote === "number") {
+      setVoteFromDb(currentVote);
     }
+    const currentSave = getSave(image._id);
 
-    const { addVote, getVote, addSave, getSave } = sessionContext;
+    if (currentSave) {
+      setIsSaved(true);
+    }
+  }, [image._id]);
 
-    const handleCommentOn = () => {
-        setShowCommentForm(!showCommentForm);
+  useEffect(() => {
+    const currentSave = getSave(image._id);
+    if (currentSave) {
+      setIsSaved(true);
+    } else {
+      setIsSaved(false);
+    }
+  }, [image._id, sessionContext.savedPosts]);
 
-    };
+  useEffect(() => {
+    const currentVote = getVote(image._id);
+    if (typeof currentVote === "number") {
+      setVote(currentVote);
+    }
+  }, [image._id, sessionContext.votes]);
 
-    const handleReplySubmit = () => {
-        setShowCommentForm(false)
-    };
+  const handleSave = async () => {
+    if (sessionContext.userId) {
+      addSave(image._id);
+      setIsSaved(!isSaved);
+    } else {
+      console.log("You must be logged in to save posts");
+    }
+  };
 
+  const handleUpvote = () => {
+    const currentVote = getVote(image._id);
+    if (currentVote === 1) {
+      setVote(0);
+      addVote(image._id, 0);
+    } else {
+      setVote(1);
+      addVote(image._id, 1);
+    }
+  };
 
-    useEffect(() => {
-        const currentVote = getVote(image._id);
-        if (typeof currentVote === "number") {
-            setVoteFromDb(currentVote);
-        }
-        const currentSave = getSave(image._id);
+  const handleDownvote = () => {
+    const currentVote = getVote(image._id);
+    if (currentVote === -1) {
+      setVote(0);
+      addVote(image._id, 0);
+    } else {
+      setVote(-1);
+      addVote(image._id, -1);
+    }
+  };
 
-        if (currentSave) {
-            setIsSaved(true);
-        }
+  const handleImageError = () => {
+    setImageUrl("/images/NoImage.png");
+  };
 
-    }, [image._id]);
+  const handleImageLoad = () => {
+    setImageUrl(image.url);
+    setImageLoaded(true);
+  };
 
-    useEffect(() => {
-        const currentSave = getSave(image._id);
-        if (currentSave) {
-            setIsSaved(true);
-        } else {
-            setIsSaved(false);
-        }
-    }, [image._id, sessionContext.savedPosts]);
-
-    useEffect(() => {
-        const currentVote = getVote(image._id);
-        if (typeof currentVote === "number") {
-
-            setVote(currentVote);
-        }
-    }, [image._id, sessionContext.votes]);
-
-    const handleSave = async () => {
-        if (sessionContext.userId) {
-            addSave(image._id);
-            setIsSaved(!isSaved);
-
-        } else {
-            console.log('You must be logged in to save posts');
-        }
-    };
-
-
-    const handleUpvote = () => {
-        const currentVote = getVote(image._id);
-        if (currentVote === 1) {
-            setVote(0);
-            addVote(image._id, 0);
-        } else {
-            setVote(1);
-            addVote(image._id, 1);
-        }
-    };
-
-    const handleDownvote = () => {
-        const currentVote = getVote(image._id);
-        if (currentVote === -1) {
-            setVote(0);
-            addVote(image._id, 0);
-        } else {
-            setVote(-1);
-            addVote(image._id, -1);
-        }
-    };
-
-
-
-    const handleImageError = () => {
-        setImageUrl('/images/NoImage.png');
-    };
-
-    const handleImageLoad = () => {
-        setImageUrl(image.url)
-        setImageLoaded(true);
-    };
-
-    return (
+  return (
+    <div
+      className="fixed top-[10%] left-0 bottom-[10%] w-full h-auto bg-black bg-opacity-50 flex flex-row"
+      style={{ zIndex: 1000 }}
+    >
+      <div className="bg-secondary w-1/5 h-full overflow-y-auto flex flex-col justify-center items-center"></div>
+      <div
+        className="w-3/5 h-full overflow-y-auto flex flex-col justify-center items-center bg-main"
+        style={{ backgroundColor: "white" }}
+      >
+        <Image
+          alt={"Big image"}
+          width={image.width}
+          height={image.height}
+          src={imageUrl}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
+          className="w-full h-full object-cover"
+          style={{
+            maxHeight: "100%",
+            maxWidth: "100%",
+            height: "auto",
+            width: "auto",
+          }}
+        />
+      </div>
+      <div className="bg-main w-1/5 h-full overflow-y-auto flex flex-col justify-start items-center">
         <div
-            className="fixed top-[10%] left-0 bottom-[10%] w-full h-auto bg-black bg-opacity-50 flex flex-row"
-            style={{ zIndex: 1000 }}
+          className="w-full top-0 right-0 p-1 flex justify-end items-end"
+          style={{ zIndex: 1001 }}
         >
-            <div
-                className="bg-secondary w-1/5 h-full overflow-y-auto flex flex-col justify-center items-center"
-
-            >
-
-            </div>
-            <div
-                className="w-3/5 h-full overflow-y-auto flex flex-col justify-center items-center bg-main"
-                style={{ backgroundColor: 'white' }}
-            >
-                <Image
-                    alt={"Big image"}
-                    width={image.width}
-                    height={image.height}
-                    src={imageUrl}
-                    onError={handleImageError}
-                    onLoad={handleImageLoad}
-                    className="w-full h-full object-cover"
-                    style={{
-                        maxHeight: '100%',
-                        maxWidth: '100%',
-                        height: 'auto',
-                        width: 'auto',
-                    }}
-                />
-            </div>
-            <div
-                className="bg-main w-1/5 h-full overflow-y-auto flex flex-col justify-start items-center"
-
-            >
-                <div
-                    className="w-full top-0 right-0 p-1 flex justify-end items-end"
-                    style={{ zIndex: 1001 }}
-                >
-                    <Button onClick={onClose}>
-                        ×
-                    </Button>
-                </div>
-                <div className="bg-light-main w-full flex flex-row justify-center items-center mb-2">
-                    {image.tags.map((tag, index) => (
-                        <span
-                            key={index}
-                            className="bg-secondary p-1 h-[80%] rounded-lg mr-2.5"
-                        >
-                            #{tag}
-                        </span>
-                    ))}
-                </div>
-                <div className="flex flex-row justify-between w-[100%]">
-                    <div className="flex justify-start">
-                        <Button onClick={handleCommentOn} clicked={showCommentForm}>
-                            Comment
-                        </Button>
-                        <Button onClick={handleSave} clicked={isSaved}>
-                            Save
-                        </Button>
-                    </div>
-                    <div className="flex justify-end items-center">
-                        <div className="flex flex-row items-center">
-                            <Button onClick={handleUpvote} clicked={vote == 1}>
-                                Up
-                            </Button>
-                            <Button onClick={handleDownvote} clicked={vote == -1}>
-                                Down
-                            </Button>
-                            <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">{image.upvotes - image.downvotes + vote - voteFromDb}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {showCommentForm && (
-                    <div
-                        className=" h-[200px] bg-slate-500 "
-                    >
-                        <CommentForm
-                            parentId={"null"}
-                            postId={image._id}
-                            onSubmit={handleReplySubmit}
-                            userId={sessionContext.userId}
-                            onCancel={() => setShowCommentForm(false)}
-                        />
-                    </div>
-                )}
-                <CommentSection image={image} />
-
-            </div>
-
-
-
+          <Button onClick={onClose}>×</Button>
         </div>
-    );
+        <div className="bg-light-main w-full flex flex-row justify-center items-center mb-2">
+          {image.tags.map((tag, index) => (
+            <span
+              key={index}
+              className="bg-secondary p-1 h-[80%] rounded-lg mr-2.5"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-row justify-between w-[100%]">
+          <div className="flex justify-start">
+            <Button onClick={handleCommentOn} clicked={showCommentForm}>
+              Comment
+            </Button>
+            <Button onClick={handleSave} clicked={isSaved}>
+              Save
+            </Button>
+          </div>
+          <div className="flex justify-end items-center">
+            <div className="flex flex-row items-center">
+              <Button onClick={handleUpvote} clicked={vote == 1}>
+                Up
+              </Button>
+              <Button onClick={handleDownvote} clicked={vote == -1}>
+                Down
+              </Button>
+              <span className="bg-secondary p-1 h-[80%] rounded-lg mx-2 text-lg font-bold">
+                {image.upvotes - image.downvotes + vote - voteFromDb}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {showCommentForm && (
+          <div className=" h-[200px] bg-slate-500 ">
+            <CommentForm
+              parentId={"null"}
+              postId={image._id}
+              onSubmit={handleReplySubmit}
+              userId={sessionContext.userId}
+              onCancel={() => setShowCommentForm(false)}
+            />
+          </div>
+        )}
+        <CommentSection image={image} />
+      </div>
+    </div>
+  );
 };
 
 export default BigImage;

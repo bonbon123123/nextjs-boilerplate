@@ -1,81 +1,85 @@
-import { useState, useContext } from 'react';
-
+import { useState, useContext } from "react";
 
 interface Props {
-    parentId: String;
-    postId: String;
-    userId: String | null;
-    onSubmit?: () => void;
-    onCancel?: () => void;
+  parentId: String;
+  postId: String;
+  userId: String | null;
+  onSubmit?: () => void;
+  onCancel?: () => void;
 }
 
-const CommentForm: React.FC<Props> = ({ parentId, postId, userId, onSubmit, onCancel }) => {
-    const [text, setText] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+const CommentForm: React.FC<Props> = ({
+  parentId,
+  postId,
+  userId,
+  onSubmit,
+  onCancel,
+}) => {
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
+    try {
+      const response = await fetch("/api/mongo/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId: postId,
+          parentId: parentId,
+          text: text,
+          userId: userId,
+          upvotes: 0,
+          downvotes: 0,
+        }),
+      });
 
-        try {
-            const response = await fetch('/api/mongo/comments', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    postId: postId,
-                    parentId: parentId,
-                    text: text,
-                    userId: userId,
-                    upvotes: 0,
-                    downvotes: 0
-                }),
-            });
+      if (response.ok) {
+        setText("");
+        if (onSubmit) onSubmit();
+      } else {
+        const data = await response.json();
+        setError(data.message || "Failed to post comment");
+      }
+    } catch (err) {
+      setError("An error occurred while posting the comment");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            if (response.ok) {
-                setText('');
-                if (onSubmit) onSubmit();
-            } else {
-                const data = await response.json();
-                setError(data.message || 'Failed to post comment');
-            }
-        } catch (err) {
-            setError('An error occurred while posting the comment');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="mt-2 mb-4">
-            <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                className="w-full p-2 text-sm bg-light-secondary border border-gray-600 rounded"
-                placeholder="Write your reply..."
-                rows={3}
-            />
-            <div className="flex gap-2 mt-2">
-                <button
-                    type="submit"
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                    Submit
-                </button>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                    Cancel
-                </button>
-            </div>
-        </form>
-    );
+  return (
+    <form onSubmit={handleSubmit} className="mt-2 mb-4">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="w-full p-2 text-sm bg-light-secondary border border-gray-600 rounded"
+        placeholder="Write your reply..."
+        rows={3}
+      />
+      <div className="flex gap-2 mt-2">
+        <button
+          type="submit"
+          className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Submit
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
 };
 
 export default CommentForm;

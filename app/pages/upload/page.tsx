@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
-import ImageDisplay from '../../components/ImageDisplay';
-import Button from '../../components/Button';
-
+import { useState, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
+import ImageDisplay from "../../components/ImageDisplay";
+import Button from "../../components/Button";
 
 const UploadPage = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -20,32 +19,31 @@ const UploadPage = () => {
     onDrop: (acceptedFiles: File[]) => {
       setFiles(acceptedFiles);
     },
-    accept: { mimeTypes: ['image/*'] },
+    accept: { mimeTypes: ["image/*"] },
     multiple: true,
   });
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowLeft') {
-
+      if (event.key === "ArrowLeft") {
         if (currentIndex === 0) {
           setCurrentIndex(files.length - 1);
         } else {
           setCurrentIndex(Math.max(0, currentIndex - 1));
         }
-      } else if (event.key === 'ArrowRight') {
+      } else if (event.key === "ArrowRight") {
         if (currentIndex === files.length - 1) {
           setCurrentIndex(0);
         } else {
           setCurrentIndex(Math.min(files.length - 1, currentIndex + 1));
         }
-      } 
+      }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [currentIndex, files.length]);
 
@@ -54,9 +52,11 @@ const UploadPage = () => {
       <h1 className="containerds text-3xl font-bold">Upload Images</h1>
       <div {...getRootProps()} className="bg-gray-100 p-4 rounded-md">
         <input {...getInputProps()} />
-        {
-          isDragActive ? <p>Drop the files here ...</p> : <p>Drag and drop files here, or click to select files</p>
-        }
+        {isDragActive ? (
+          <p>Drop the files here ...</p>
+        ) : (
+          <p>Drag and drop files here, or click to select files</p>
+        )}
       </div>
       {files.length > 0 && (
         <div className="flex justify-center mt-4">
@@ -71,7 +71,10 @@ const UploadPage = () => {
           >
             Previous
           </Button>
-          <ImageDisplay image={files[currentIndex]} onImageSubmit={handleImageSubmit} />
+          <ImageDisplay
+            image={files[currentIndex]}
+            onImageSubmit={handleImageSubmit}
+          />
           <Button
             onClick={() => {
               if (currentIndex === files.length - 1) {
@@ -80,7 +83,6 @@ const UploadPage = () => {
                 setCurrentIndex(Math.min(files.length - 1, currentIndex + 1));
               }
             }}
-
           >
             Next
           </Button>

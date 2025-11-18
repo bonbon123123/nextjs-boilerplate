@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 
 const VoteSchema = new mongoose.Schema({
-    postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },
-    voteValue: { type: Number, required: true }
+  postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true },
+  voteValue: { type: Number, required: true },
 });
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema(
+  {
     username: String,
     email: String,
     password: String,
@@ -17,9 +18,11 @@ const UserSchema = new mongoose.Schema({
     isActive: Boolean,
     isVerified: Boolean,
     votes: [VoteSchema],
-    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
-    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
-}, { timestamps: true });
+    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+  },
+  { timestamps: true },
+);
 
 const User = mongoose.models.User || mongoose.model("User", UserSchema);
 

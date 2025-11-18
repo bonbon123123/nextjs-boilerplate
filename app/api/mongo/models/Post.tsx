@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-const PostSchema = new mongoose.Schema({
+const PostSchema = new mongoose.Schema(
+  {
     userId: String,
     url: String,
     tags: Array,
@@ -13,11 +14,11 @@ const PostSchema = new mongoose.Schema({
     locked: Boolean,
     name: String,
     size: Number,
-    type: String
-
-}, { timestamps: true });
+    type: String,
+  },
+  { timestamps: true },
+);
 
 const Post = mongoose.models.Post || mongoose.model("Post", PostSchema);
 
 export default Post;
-
