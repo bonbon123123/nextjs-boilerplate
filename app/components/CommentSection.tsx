@@ -1,21 +1,6 @@
 import { useState, useEffect } from "react";
 import Comment from "./Comment";
-
-interface CommentSchema {
-  _id: string;
-  postId: string;
-  userId: {
-    _id: string;
-    username: string;
-  } | null;
-  parentId: string | null;
-  text: string;
-  upvotes: number;
-  downvotes: number;
-  createdAt: Date;
-  updatedAt: Date;
-  replies?: CommentSchema[];
-}
+import CommentSchema from "../interfaces/CommentSchema";
 
 interface Props {
   image: {

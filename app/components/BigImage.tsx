@@ -5,13 +5,14 @@ import CommentForm from "./CommentForm";
 import { SessionContext } from "../invisibleComponents/SessionProvider";
 import Image from "next/image";
 import Post from "../interfaces/Post";
-
-interface Props {
+import { getTagColor } from "../interfaces/tags";
+interface BigImageProps {
   image: Post;
-  onClose?: () => void;
+  onClose: () => void;
+  onTagClick?: (tag: string) => void;
 }
 
-const BigImage: React.FC<Props> = ({ image, onClose }) => {
+const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
   const [imageUrl, setImageUrl] = useState(image.url);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [vote, setVote] = useState(0);
@@ -20,7 +21,12 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
   const [isSaved, setIsSaved] = useState(false);
 
   const sessionContext = useContext(SessionContext);
-
+  const handleTagClick = (tag: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onTagClick) {
+      onTagClick(tag);
+    }
+  };
   if (!sessionContext) {
     throw new Error("SessionContext is not provided");
   }
@@ -112,12 +118,11 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
         className="relative w-full max-w-[1400px] max-h-[90vh] bg-base-100 rounded-lg shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button top-right */}
+        {/* Close button  */}
         <div className="absolute top-3 right-3 z-20">
           <Button onClick={onClose}>×</Button>
         </div>
 
-        {/* Content wrapper: padding on top/bottom, flex for three columns */}
         <div className="flex-1 flex flex-col min-h-0 pt-6 md:pt-8 lg:pt-10 pb-6 md:pb-8 lg:pb-10">
           {/* Three-column layout */}
           <div className="flex-1 flex gap-4 min-h-0 px-6 md:px-8 lg:px-10">
@@ -131,7 +136,6 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
               </div>
             </div>
 
-            {/* Main image  */}
             <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
               {/* Image */}
               <div className="flex-1 flex items-center justify-center bg-base-300 p-4 md:p-6 lg:p-8 min-h-0 overflow-auto rounded-lg">
@@ -147,14 +151,26 @@ const BigImage: React.FC<Props> = ({ image, onClose }) => {
               </div>
 
               {/* Tags bar */}
-              <div className="bg-base-200 px-4 py-2 border-b border-base-300 overflow-x-auto mt-4">
-                <div className="flex gap-2 whitespace-nowrap">
-                  {image.tags.map((tag, index) => (
-                    <span key={index} className="tag inline-block">
+              <div>
+                <h3 className="font-semibold mb-2">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {image.tags?.map((tag, index) => (
+                    <span
+                      key={index}
+                      className={`badge ${getTagColor(
+                        tag
+                      )} gap-2 px-3 py-3 cursor-pointer hover:opacity-80`}
+                      onClick={(e) => handleTagClick(tag, e)}
+                    >
                       #{tag}
                     </span>
                   ))}
                 </div>
+                {onTagClick && (
+                  <p className="text-xs opacity-70 mt-2">
+                    Click a tag to search for similar images
+                  </p>
+                )}
               </div>
 
               {/* Controls bar */}

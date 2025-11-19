@@ -10,18 +10,19 @@ const LoginPage = () => {
   const session = useContext(SessionContext);
 
   if (!session) {
-    throw new Error("Brak dostępu do kontekstu sesji");
+    throw new Error("No access to the session context");
   }
   if (session.userName) {
     redirect("/pages/profile");
   }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       await session.login(username, password);
     } catch (error) {
-      alert("złe dane logowania");
-      setError("Błąd logowania");
+      alert("Incorrect login data");
+      setError("Login error");
     }
   };
 
@@ -29,39 +30,41 @@ const LoginPage = () => {
     <div className="min-h-screen flex justify-center items-center bg-base-100">
       <div className="card w-full max-w-md shadow-xl bg-base-200">
         <form onSubmit={handleSubmit} className="card-body">
-          <h1 className="card-title text-2xl mb-4">Logowanie</h1>
+          <h1 className="card-title text-2xl">Login</h1>
 
-          <div className="form-control">
+          <div className="form-control mt-2 flex flex-col">
             <label className="label">
-              <span className="label-text">Nazwa użytkownika:</span>
+              <span className="label-text">Username:</span>
             </label>
+
             <input
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               className="input input-bordered"
-              placeholder="Wpisz nazwę użytkownika"
+              placeholder="Enter username"
             />
           </div>
 
-          <div className="form-control">
+          <div className="form-control mt-2 flex flex-col">
             <label className="label">
-              <span className="label-text">Hasło:</span>
+              <span className="label-text">Password:</span>
             </label>
+
             <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="input input-bordered"
-              placeholder="Wpisz hasło"
+              placeholder="Enter password"
             />
           </div>
 
           {error && <p className="text-error text-sm">{error}</p>}
 
-          <div className="form-control mt-6">
+          <div className="form-control mt-2">
             <button type="submit" className="btn btn-primary">
-              Zaloguj się
+              Log in
             </button>
           </div>
         </form>

@@ -3,13 +3,15 @@ import Button from "./Button";
 import { SessionContext } from "../invisibleComponents/SessionProvider";
 import Image from "next/image";
 import Post from "../interfaces/Post";
+import { getTagColor } from "../interfaces/tags";
 
 interface Props {
   image: Post;
   onClick?: () => void;
+  onTagClick?: (tag: string) => void;
 }
 
-const SmallImage: React.FC<Props> = ({ image, onClick }) => {
+const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   const [imageUrl, setImageUrl] = useState(image.url);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
@@ -99,11 +101,12 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
     setImageLoaded(true);
   };
 
-  if (image.upvotes != 0) {
-    // console.log(sessionContext.userRole)
-    //console.log(image)
-    // console.log(image.upvotes - image.downvotes)
-  }
+  const handleTagClickInternal = (tag: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onTagClick) {
+      onTagClick(tag);
+    }
+  };
 
   return (
     <div
@@ -134,7 +137,13 @@ const SmallImage: React.FC<Props> = ({ image, onClick }) => {
           <div className="w-full h-8 flex items-center overflow-x-auto border-t border-base-300 bg-base-200 px-2">
             <div className="flex gap-2 whitespace-nowrap items-center">
               {image.tags?.map((tag, index) => (
-                <span key={index} className="tag">
+                <span
+                  key={index}
+                  className={`badge badge-sm ${getTagColor(
+                    tag
+                  )} gap-2 font-semibold cursor-pointer hover:opacity-80`}
+                  onClick={(e) => handleTagClickInternal(tag, e)}
+                >
                   #{tag}
                 </span>
               ))}
