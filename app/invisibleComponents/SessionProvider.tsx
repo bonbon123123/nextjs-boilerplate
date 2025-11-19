@@ -2,13 +2,14 @@
 import { createContext, useState, useEffect } from "react";
 import { ReactNode } from "react";
 import SessionContextValue from "../interfaces/SessionContextValue";
+import React from "react";
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 const authenticate = async (
   username: string,
   password: string,
-  isAnonymous: boolean,
+  isAnonymous: boolean
 ) => {
   const response = await fetch("/api/mongo/login", {
     method: "POST",
@@ -103,7 +104,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
           // Jeżeli dane są błędne (nie są tablicą), czyścimy je
           console.error(
             "Dane w localStorage pod 'savedPosts' nie są tablicą:",
-            parsedSavedPosts,
+            parsedSavedPosts
           );
           localStorage.removeItem("savedPosts");
           setSavedPosts(new Set<string>()); // Resetujemy do pustego zestawu
@@ -201,9 +202,12 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
       });
   };
 
-  const getSave = (id: string): boolean => {
-    return savedPosts.has(id); // Sprawdzenie, czy post został zapisany
-  };
+  const getSave = React.useCallback(
+    (id: string) => {
+      return savedPosts.has(id);
+    },
+    [savedPosts]
+  );
 
   const addVote = (id: string, voteValue: number) => {
     const currentVote = getVote(id);
@@ -260,13 +264,12 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const getVote = (id: string) => {
-    if (Object.keys(votes).length > 0) {
-      return votes[id];
-    } else {
-      return null;
-    }
-  };
+  const getVote = React.useCallback(
+    (id: string) => {
+      return votes[id] ?? null;
+    },
+    [votes]
+  );
 
   return (
     <SessionContext.Provider

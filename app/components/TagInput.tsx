@@ -47,7 +47,6 @@ const TagInput: React.FC<TagInputProps> = ({
       .trim()
       .toLowerCase()}`;
 
-    // Usuń istniejący tag tego samego typu jeśli nie pozwalamy na wiele
     if (!selectedSpecialType.multiple) {
       const filteredTags = tags.filter((t) => {
         const parsed = parseTag(t);

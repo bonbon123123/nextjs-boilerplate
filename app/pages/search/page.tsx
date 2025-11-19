@@ -19,10 +19,23 @@ const SearchPage = () => {
     sortBy: null,
     sortOrder: "desc",
   });
-
+  const fetchImages = React.useCallback(async (filters: SearchFilters) => {
+    setLoading(true);
+    try {
+      const queryString = buildQueryString(filters);
+      const response = await fetch(`/api/mongo/posts?${queryString}`);
+      const data = await response.json();
+      setImages(data);
+      setCurrentFilters(filters);
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
   useEffect(() => {
     fetchImages(currentFilters);
-  }, []);
+  }, [fetchImages, currentFilters]);
 
   const buildQueryString = (filters: SearchFilters): string => {
     const params = new URLSearchParams();
@@ -50,21 +63,6 @@ const SearchPage = () => {
     }
 
     return params.toString();
-  };
-
-  const fetchImages = async (filters: SearchFilters) => {
-    setLoading(true);
-    try {
-      const queryString = buildQueryString(filters);
-      const response = await fetch(`/api/mongo/posts?${queryString}`);
-      const data = await response.json();
-      setImages(data);
-      setCurrentFilters(filters);
-    } catch (error) {
-      console.error("Error fetching images:", error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   useEffect(() => {

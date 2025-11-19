@@ -47,27 +47,18 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
       setVoteFromDb(currentVote);
     }
     const currentSave = getSave(image._id);
-
-    if (currentSave) {
-      setIsSaved(true);
-    }
-  }, [image._id]);
+    if (currentSave) setIsSaved(true);
+  }, [image._id, getVote, getSave]);
 
   useEffect(() => {
     const currentSave = getSave(image._id);
-    if (currentSave) {
-      setIsSaved(true);
-    } else {
-      setIsSaved(false);
-    }
-  }, [image._id, sessionContext.savedPosts]);
+    setIsSaved(!!currentSave);
+  }, [image._id, sessionContext.savedPosts, getSave]);
 
   useEffect(() => {
-    const currentVote = getVote(image._id);
-    if (typeof currentVote === "number") {
-      setVote(currentVote);
-    }
-  }, [image._id, sessionContext.votes]);
+    const currentSave = getSave(image._id);
+    setIsSaved(!!currentSave);
+  }, [image._id, sessionContext.savedPosts, getSave]);
 
   const handleSave = async () => {
     if (sessionContext.userId) {
