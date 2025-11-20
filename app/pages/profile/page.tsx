@@ -35,16 +35,8 @@ const UserPage = () => {
   };
 
   useEffect(() => {
-    if (
-      activeSection === "added" ||
-      activeSection === "liked" ||
-      activeSection === "saved"
-    ) {
-      handleSectionChange(activeSection);
-    }
-  }, [activeSection]); // Re-fetch images when active section changes
+    if (!sessionContext || !sessionContext.userId) return;
 
-  useEffect(() => {
     if (
       activeSection === "added" ||
       activeSection === "liked" ||
@@ -52,7 +44,12 @@ const UserPage = () => {
     ) {
       handleSectionChange(activeSection);
     }
-  }, [sessionContext.savedPosts, sessionContext.votes]);
+  }, [
+    activeSection,
+    sessionContext,
+    sessionContext?.savedPosts,
+    sessionContext?.votes,
+  ]);
 
   const clickAddedImages = async () => {
     const data = await fetchImages("author");
@@ -70,6 +67,7 @@ const UserPage = () => {
   };
 
   const handleSectionChange = (section: "added" | "liked" | "saved") => {
+    if (!sessionContext || !sessionContext.userId) return;
     setActiveSection(section);
     if (section === "added") {
       clickAddedImages();
