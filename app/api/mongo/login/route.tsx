@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import User from "../models/User";
 import dbConnect from "../db";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(req: Request) {
@@ -16,7 +15,7 @@ export async function POST(req: Request) {
     } else {
       return NextResponse.json(
         { message: "Coś poszło nie tak" },
-        { status: 401 },
+        { status: 401 }
       );
     }
   } else {
@@ -25,7 +24,7 @@ export async function POST(req: Request) {
       if (!user) {
         return NextResponse.json(
           { message: "User not found" },
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -33,7 +32,7 @@ export async function POST(req: Request) {
       if (!isValidPassword) {
         return NextResponse.json(
           { message: "Invalid password" },
-          { status: 401 },
+          { status: 401 }
         );
       }
       user.lastLogin = new Date();
@@ -58,7 +57,7 @@ export async function POST(req: Request) {
       console.error("Error logging in:", error);
       return NextResponse.json(
         { message: "Error logging in", error },
-        { status: 500 },
+        { status: 500 }
       );
     }
   }

@@ -2,8 +2,7 @@
 import { createContext, useState, useEffect } from "react";
 import { ReactNode } from "react";
 import SessionContextValue from "../interfaces/SessionContextValue";
-import React from "react";
-
+import { useRouter } from "next/navigation";
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 const authenticate = async (
@@ -28,6 +27,8 @@ const authenticate = async (
 };
 
 const SessionProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
@@ -137,24 +138,30 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
   const login = async (username: string, password: string) => {
     const user = await authenticate(username, password, false);
     if (user) {
-      const votesMap: { [key: string]: number } = {};
-      user.votes.forEach((vote: any) => {
-        votesMap[vote.postId] = vote.voteValue;
-      });
-      setSavedPosts(new Set(user.savedPosts));
       setSessionId(user.sessionId);
       setUserId(user.userId);
       setUserName(user.username);
       setUserRole(user.role);
-      setVotes(votesMap);
-      localStorage.setItem("savedPosts", JSON.stringify(user.savedPosts));
+      setVotes(user.votes || {});
+      setSavedPosts(new Set(user.savedPosts || []));
+
+      localStorage.setItem("sessionId", user.sessionId);
       localStorage.setItem("userId", user.userId);
       localStorage.setItem("userName", user.username);
       localStorage.setItem("userRole", user.role);
-      localStorage.setItem("sessionId", user.sessionId);
-      localStorage.setItem("votes", JSON.stringify(votesMap));
+      localStorage.setItem("votes", JSON.stringify(user.votes || []));
+      localStorage.setItem("savedPosts", JSON.stringify(user.savedPosts || []));
+
+      setShouldRedirect(true);
     }
   };
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.push("/pages/profile");
+      setShouldRedirect(false);
+    }
+  }, [shouldRedirect, router]);
 
   const logout = () => {
     setSessionId(null);
@@ -202,12 +209,9 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
       });
   };
 
-  const getSave = React.useCallback(
-    (id: string) => {
-      return savedPosts.has(id);
-    },
-    [savedPosts]
-  );
+  const getSave = (id: string): boolean => {
+    return savedPosts.has(id); // Sprawdzenie, czy post został zapisany
+  };
 
   const addVote = (id: string, voteValue: number) => {
     const currentVote = getVote(id);
@@ -264,12 +268,13 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const getVote = React.useCallback(
-    (id: string) => {
-      return votes[id] ?? null;
-    },
-    [votes]
-  );
+  const getVote = (id: string) => {
+    if (Object.keys(votes).length > 0) {
+      return votes[id];
+    } else {
+      return null;
+    }
+  };
 
   return (
     <SessionContext.Provider

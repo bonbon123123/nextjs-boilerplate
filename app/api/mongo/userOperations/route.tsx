@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import User from "../models/User";
 import dbConnect from "../db";
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-
+import { v4 as uuidv4 } from "uuid";
 export async function GET(req: Request) {
   await dbConnect();
 
@@ -14,7 +13,7 @@ export async function GET(req: Request) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
       { message: "Error fetching users", error },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -28,41 +27,59 @@ export async function POST(req: Request) {
   await dbConnect();
 
   try {
-    const { username, password, email, role } = await req.json();
+    const { username, email, password } = await req.json();
 
-    if (!username) {
+    if (!username || !email || !password) {
       return NextResponse.json(
-        { message: "Username is required" },
-        { status: 400 },
+        { message: "All fields are required" },
+        { status: 400 }
       );
     }
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
+    });
 
-    if (!password) {
+    if (existingUser) {
       return NextResponse.json(
-        { message: "Password is required" },
-        { status: 400 },
+        { message: "User with this username or email already exists" },
+        { status: 409 }
       );
     }
-    const userRole = role || "user";
-
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const sessionId = uuidv4();
+
     const newUser = new User({
-      username: username,
+      username,
+      email,
       password: hashedPassword,
-      email: email,
-      role: userRole,
-      isActive: false,
+      role: "user",
+      sessionId,
+      isActive: true,
       isVerified: false,
+      lastLogin: new Date(),
+      createdAt: new Date(),
     });
+
     await newUser.save();
-    return NextResponse.json(newUser, { status: 201 });
+
+    const userData = {
+      sessionId,
+      userId: newUser._id,
+      username: newUser.username,
+      role: newUser.role,
+      votes: newUser.votes,
+      savedPosts: newUser.savedPosts,
+      comments: newUser.comments,
+    };
+
+    return NextResponse.json(userData, { status: 201 });
   } catch (error) {
     console.error("Error creating user:", error);
     return NextResponse.json(
       { message: "Error creating user", error },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -80,12 +97,12 @@ export async function PATCH(req: Request) {
 
     const isValidPassword = await bcrypt.compare(
       currentPassword,
-      user.password,
+      user.password
     );
     if (!isValidPassword) {
       return NextResponse.json(
         { message: "Invalid current password" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -105,7 +122,7 @@ export async function PATCH(req: Request) {
     console.error("Error updating user:", error);
     return NextResponse.json(
       { message: "Error updating user", error },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -120,13 +137,13 @@ export async function DELETE(req: Request) {
     }
     return NextResponse.json(
       { message: "User deleted successfully" },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error deleting user:", error);
     return NextResponse.json(
       { message: "Error deleting user", error },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,13 +1,14 @@
 "use client";
 import { useState, useContext } from "react";
 import { SessionContext } from "@/app/invisibleComponents/SessionProvider";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const session = useContext(SessionContext);
+  const router = useRouter();
 
   if (!session) {
     throw new Error("No access to the session context");
@@ -24,6 +25,10 @@ const LoginPage = () => {
       alert("Incorrect login data");
       setError("Login error");
     }
+  };
+
+  const handleRegisterClick = () => {
+    router.push("/pages/register");
   };
 
   return (
@@ -62,9 +67,16 @@ const LoginPage = () => {
 
           {error && <p className="text-error text-sm">{error}</p>}
 
-          <div className="form-control mt-2">
+          <div className="form-control mt-4 flex items-center gap-2">
             <button type="submit" className="btn btn-primary">
               Log in
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleRegisterClick}
+            >
+              Register
             </button>
           </div>
         </form>
