@@ -35,19 +35,22 @@ export async function GET(req: Request) {
     if (specialTagsParam) {
       try {
         const specialTags = JSON.parse(specialTagsParam);
+
         Object.entries(specialTags).forEach(([prefix, value]) => {
           const specialTag = `${prefix}:${value}`;
-          if (!query.tags) {
-            query.tags = { $in: [specialTag] };
-          } else if (query.tags.$all) {
-            query.tags.$all.push(specialTag);
-          } else if (query.tags.$in) {
-            if (!Array.isArray(query.$and)) {
-              query.$and = [];
-            }
-            query.$and.push({ tags: { $in: [specialTag] } });
+
+          if (prefix === "danger" && value === "sfw") {
+            // Obsługa sfw: include sfw i brak nsfw
+            if (!query.$and) query.$and = [];
+            query.$and.push({
+              $or: [
+                { tags: { $nin: ["danger:nsfw"] } },
+                { tags: { $in: ["danger:sfw"] } },
+              ],
+            });
           } else {
-            query.tags = { $in: [specialTag] };
+            if (!query.$and) query.$and = [];
+            query.$and.push({ tags: { $all: [specialTag] } });
           }
         });
       } catch (e) {

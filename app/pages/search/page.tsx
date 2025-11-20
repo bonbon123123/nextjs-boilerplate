@@ -8,6 +8,7 @@ import AdvancedSearch from "@/app/components/AdvancedSearch";
 import { SearchFilters, getTagColor } from "@/app/interfaces/tags";
 
 const SearchPage = () => {
+  const [pendingTags, setPendingTags] = useState<string[]>([]);
   const [images, setImages] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [columns, setColumns] = useState<Post[][]>([]);
@@ -93,14 +94,8 @@ const SearchPage = () => {
   };
 
   const handleTagClick = (tag: string) => {
-    // Dodaj tag do wyszukiwania jeśli jeszcze go nie ma
-    if (!currentFilters.tags.includes(tag)) {
-      const newFilters = {
-        ...currentFilters,
-        tags: [...currentFilters.tags, tag],
-      };
-      setCurrentFilters(newFilters);
-      fetchImages(newFilters);
+    if (!pendingTags.includes(tag)) {
+      setPendingTags([...pendingTags, tag]);
     }
   };
 
@@ -108,8 +103,17 @@ const SearchPage = () => {
     <div className="min-h-screen bg-base-100 px-4 md:px-8 py-4">
       <div className="max-w-7xl mx-auto">
         <AdvancedSearch
-          onSearch={handleSearch}
+          onSearch={(filters) => {
+            const mergedFilters = {
+              ...filters,
+              tags: Array.from(new Set([...filters.tags, ...pendingTags])),
+            };
+
+            setPendingTags([]);
+            handleSearch(mergedFilters);
+          }}
           initialFilters={currentFilters}
+          extraTags={pendingTags}
         />
 
         {/* Current filters display */}
@@ -180,6 +184,7 @@ const SearchPage = () => {
                     key={image._id}
                     image={image}
                     onClick={() => handleImageClick(image)}
+                    onTagClick={handleTagClick}
                   />
                 ))}
               </div>

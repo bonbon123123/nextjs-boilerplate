@@ -14,11 +14,13 @@ import {
 interface AdvancedSearchProps {
   onSearch: (filters: SearchFilters) => void;
   initialFilters?: SearchFilters;
+  extraTags?: string[];
 }
 
 const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   onSearch,
   initialFilters,
+  extraTags,
 }) => {
   const [tags, setTags] = useState<string[]>(initialFilters?.tags || []);
   const [inputValue, setInputValue] = useState("");
@@ -88,7 +90,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   return (
     <div className="space-y-4 p-4 bg-base-200 rounded-lg shadow-md">
       {/* Display tags */}
-      {tags.length > 0 && (
+      {(tags.length > 0 || (extraTags?.length ?? 0) > 0) && (
         <div className="flex flex-wrap gap-2 p-2 bg-base-100 rounded">
           {tags.map((tag) => (
             <div
@@ -98,12 +100,27 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               )} gap-2 px-3 py-3 cursor-pointer`}
               onClick={() => removeTag(tag)}
             >
-              #{tag}
-              <span className="text-xs opacity-70">×</span>
+              #{tag} <span className="text-xs opacity-70">×</span>
+            </div>
+          ))}
+
+          {extraTags?.map((tag) => (
+            <div
+              key={tag}
+              className={`badge ${getTagColor(
+                tag
+              )} gap-2 px-3 py-3 cursor-pointer`}
+              onClick={() => {
+                if (!tags.includes(tag)) setTags([...tags, tag]);
+                if (extraTags) extraTags = extraTags.filter((t) => t !== tag);
+              }}
+            >
+              #{tag} <span className="text-xs opacity-70">×</span>
             </div>
           ))}
         </div>
       )}
+
       {/* Basic Search */}
       <div className="space-y-2">
         <div className="flex gap-2">
@@ -127,38 +144,30 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             Add
           </button>
         </div>
-
-        {/* Match type toggle */}
-        {tags.length > 1 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Match:</span>
-            <div className="join">
-              <button
-                className={`btn btn-sm join-item ${
-                  !matchAll ? "btn-active" : ""
-                }`}
-                onClick={() => setMatchAll(false)}
-              >
-                ANY
-              </button>
-              <button
-                className={`btn btn-sm join-item ${
-                  matchAll ? "btn-active" : ""
-                }`}
-                onClick={() => setMatchAll(true)}
-              >
-                ALL
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
       {/* Action buttons */}
       <div className="flex gap-2">
         <button onClick={handleSearch} className="btn btn-primary flex-1">
           Search
         </button>
-        <button onClick={clearFilters} className="btn btn-ghost">
+        {/* Match type toggle */}
+
+        <div className="flex items-center gap-2">
+          <label className="swap swap-rotate">
+            <input
+              type="checkbox"
+              checked={matchAll}
+              onChange={(e) => setMatchAll(e.target.checked)}
+            />
+            {/* ANY */}
+            <div className="swap-on btn btn-sm btn-primary">ALL</div>
+            {/* ALL */}
+            <div className="swap-off btn btn-sm btn-primary">ANY</div>
+          </label>
+        </div>
+
+        <button onClick={clearFilters} className="btn btn-primary">
           Clear
         </button>
       </div>

@@ -102,6 +102,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   };
 
   const handleTagClickInternal = (tag: string, e: React.MouseEvent) => {
+    console.log(tag);
     e.stopPropagation();
     if (onTagClick) {
       onTagClick(tag);
