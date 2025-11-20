@@ -10,7 +10,9 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   const tagsParam = url.searchParams.get("tags");
+  const excludedTagsParam = url.searchParams.get("excludedTags");
   const matchAll = url.searchParams.get("matchAll") === "true";
+  const matchExcludedAll = url.searchParams.get("matchExcludedAll") === "true";
   const specialTagsParam = url.searchParams.get("specialTags");
   const sortBy = url.searchParams.get("sortBy");
   const sortOrder = url.searchParams.get("sortOrder") || "desc";
@@ -19,8 +21,9 @@ export async function GET(req: Request) {
 
   try {
     const query: any = {};
-
-    // Filtrowanie
+    console.log(matchAll, tagsParam);
+    console.log(matchExcludedAll, excludedTagsParam);
+    // Filtrowanie tagów normalnych
     if (tagsParam) {
       const tags = tagsParam.split(",").map((t) => t.trim());
       if (tags.length > 0) {
@@ -28,6 +31,21 @@ export async function GET(req: Request) {
           query.tags = { $all: tags };
         } else {
           query.tags = { $in: tags };
+        }
+      }
+    }
+
+    if (excludedTagsParam) {
+      const excludedTags = excludedTagsParam.split(",").map((t) => t.trim());
+      if (excludedTags.length > 0) {
+        if (!query.$and) query.$and = [];
+
+        if (matchExcludedAll) {
+          query.$and.push({ tags: { $nin: excludedTags } });
+        } else {
+          excludedTags.forEach((tag) => {
+            query.$and.push({ tags: { $ne: tag } });
+          });
         }
       }
     }

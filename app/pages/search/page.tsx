@@ -15,11 +15,14 @@ const SearchPage = () => {
   const [selectedImage, setSelectedImage] = useState<Post | null>(null);
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({
     tags: [],
+    excludedTags: [],
     matchAll: false,
+    matchExcludedAll: false,
     specialTags: {},
     sortBy: null,
     sortOrder: "desc",
   });
+
   const fetchImages = React.useCallback(async (filters: SearchFilters) => {
     setLoading(true);
     try {
@@ -44,6 +47,11 @@ const SearchPage = () => {
     if (filters.tags.length > 0) {
       params.append("tags", filters.tags.join(","));
       params.append("matchAll", filters.matchAll.toString());
+    }
+
+    if (filters.excludedTags?.length > 0) {
+      params.append("excludedTags", filters.excludedTags.join(","));
+      params.append("matchExcludedAll", filters.matchExcludedAll.toString());
     }
 
     if (Object.keys(filters.specialTags).length > 0) {
@@ -120,29 +128,6 @@ const SearchPage = () => {
         {(currentFilters.tags.length > 0 ||
           Object.keys(currentFilters.specialTags).length > 0) && (
           <div className="my-4 p-3 bg-base-200 rounded-lg">
-            <div className="text-sm font-semibold mb-2">Active Filters:</div>
-            <div className="flex flex-wrap gap-2">
-              {currentFilters.tags.map((tag) => (
-                <div
-                  key={tag}
-                  className={`badge ${getTagColor(tag)} gap-2 px-3 py-3`}
-                >
-                  #{tag}
-                </div>
-              ))}
-              {Object.entries(currentFilters.specialTags).map(
-                ([prefix, value]) => (
-                  <div
-                    key={prefix}
-                    className={`badge ${getTagColor(
-                      `${prefix}:${value}`
-                    )} gap-2 px-3 py-3`}
-                  >
-                    #{prefix}:{value}
-                  </div>
-                )
-              )}
-            </div>
             {currentFilters.sortBy && (
               <div className="text-xs mt-2 opacity-70">
                 Sorted by: {currentFilters.sortBy} (

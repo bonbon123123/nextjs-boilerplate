@@ -45,7 +45,9 @@ body {
 .badge-secondary {
   @apply bg-secondary text-secondary-content;
 }
-
+.btn {
+  @apply p-3;
+}
 .badge-info {
   @apply bg-info text-info-content;
 }

@@ -89,7 +89,9 @@ export function getTagColor(tag: string): string {
 
 export interface SearchFilters {
   tags: string[];
+  excludedTags: string[];
   matchAll: boolean; // true = AND, false = OR
+  matchExcludedAll: boolean;
   specialTags: { [key: string]: string };
   sortBy: "votes" | "date" | null;
   sortOrder: "asc" | "desc";

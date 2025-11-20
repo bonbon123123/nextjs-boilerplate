@@ -38,21 +38,45 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     initialFilters?.dateRange || {}
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [excludedTags, setExcludedTags] = useState<string[]>(
+    initialFilters?.excludedTags || []
+  );
+  const [matchExcludedAll, setMatchExcludedAll] = useState(
+    initialFilters?.matchExcludedAll ?? false
+  );
 
   const addTag = (tag: string) => {
     const trimmedTag = tag.trim().toLowerCase();
-    if (trimmedTag && !tags.includes(trimmedTag)) {
-      setTags([...tags, trimmedTag]);
+    if (!trimmedTag) return;
+
+    if (trimmedTag.startsWith("-")) {
+      const t = trimmedTag.slice(1);
+      if (!excludedTags.includes(t)) setExcludedTags([...excludedTags, t]);
+    } else {
+      if (!tags.includes(trimmedTag)) setTags([...tags, trimmedTag]);
     }
+    setInputValue("");
+  };
+
+  const excludeTag = (tag: string) => {
+    const trimmedTag = tag.trim().toLowerCase();
+    if (!trimmedTag) return;
+
+    const t = trimmedTag.startsWith("-") ? trimmedTag.slice(1) : trimmedTag;
+    if (!excludedTags.includes(t)) setExcludedTags([...excludedTags, t]);
     setInputValue("");
   };
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter((t) => t !== tagToRemove));
+    setExcludedTags(excludedTags.filter((t) => t !== tagToRemove));
   };
 
   const addSpecialTag = (prefix: string, value: string) => {
     setSpecialTags({ ...specialTags, [prefix]: value });
+  };
+  const removeExcludedTag = (tag: string) => {
+    setExcludedTags(excludedTags.filter((t) => t !== tag));
   };
 
   const removeSpecialTag = (prefix: string) => {
@@ -67,9 +91,12 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   };
 
   const handleSearch = () => {
+    console.log(excludedTags, matchExcludedAll);
     const filters: SearchFilters = {
       tags,
+      excludedTags,
       matchAll,
+      matchExcludedAll,
       specialTags,
       sortBy,
       sortOrder,
@@ -85,25 +112,40 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     setSortBy(null);
     setSortOrder("desc");
     setDateRange({});
+    setExcludedTags([]);
+    setMatchExcludedAll(false);
   };
 
   return (
     <div className="space-y-4 p-4 bg-base-200 rounded-lg shadow-md">
       {/* Display tags */}
-      {(tags.length > 0 || (extraTags?.length ?? 0) > 0) && (
+      {(tags.length > 0 ||
+        (excludedTags?.length ?? 0) > 0 ||
+        (extraTags?.length ?? 0) > 0) && (
         <div className="flex flex-wrap gap-2 p-2 bg-base-100 rounded">
+          {/* Normal tags */}
           {tags.map((tag) => (
             <div
               key={tag}
-              className={`badge ${getTagColor(
-                tag
-              )} gap-2 px-3 py-3 cursor-pointer`}
+              className={`badge badge-success gap-2 px-3 py-3 cursor-pointer`}
               onClick={() => removeTag(tag)}
             >
               #{tag} <span className="text-xs opacity-70">×</span>
             </div>
           ))}
 
+          {/* Excluded tags */}
+          {excludedTags?.map((tag) => (
+            <div
+              key={tag}
+              className={`badge badge-error gap-2 px-3 py-3 cursor-pointer`}
+              onClick={() => removeExcludedTag(tag)}
+            >
+              #{tag} <span className="text-xs opacity-70">×</span>
+            </div>
+          ))}
+
+          {/* Extra tags */}
           {extraTags?.map((tag) => (
             <div
               key={tag}
@@ -143,6 +185,12 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           >
             Add
           </button>
+          <button
+            onClick={() => excludeTag(inputValue)}
+            className="btn btn-error"
+          >
+            Exclude
+          </button>
         </div>
       </div>
 
@@ -164,6 +212,17 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div className="swap-on btn btn-sm btn-primary">ALL</div>
             {/* ALL */}
             <div className="swap-off btn btn-sm btn-primary">ANY</div>
+          </label>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="swap swap-rotate">
+            <input
+              type="checkbox"
+              checked={matchExcludedAll}
+              onChange={(e) => setMatchExcludedAll(e.target.checked)}
+            />
+            <div className="swap-on btn btn-sm btn-error">ALL EXCLUDED</div>
+            <div className="swap-off btn btn-sm btn-error">ANY EXCLUDED</div>
           </label>
         </div>
 
