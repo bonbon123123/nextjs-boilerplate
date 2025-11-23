@@ -186,7 +186,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
               AI Analyzing...
             </>
           ) : (
-            <>🤖 Get AI Tag Suggestions</>
+            <>Get AI Tag Suggestions</>
           )}
         </Button>
       </div>

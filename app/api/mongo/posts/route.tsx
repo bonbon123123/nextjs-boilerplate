@@ -3,6 +3,60 @@ import Post from "../models/Post";
 import User from "../models/User";
 import dbConnect from "../db";
 
+function getFreshnessMultiplier(createdAt: Date): number {
+  const now = Date.now();
+  const postTime = new Date(createdAt).getTime();
+  const ageInMs = now - postTime;
+
+  const oneWeek = 7 * 24 * 60 * 60 * 1000;
+  const oneMonth = 30 * 24 * 60 * 60 * 1000;
+
+  if (ageInMs < oneWeek) {
+    // Ostatni tydzień: *1.0
+    return 1.0;
+  } else if (ageInMs < oneMonth) {
+    // Ostatni miesiąc: *0.9
+    return 0.9;
+  } else {
+    // Starsze: 0.8 - (liczba_miesięcy * 0.1), minimum 0.1
+    const monthsOld = Math.floor(ageInMs / oneMonth);
+    const multiplier = 0.8 - (monthsOld - 1) * 0.1;
+    return Math.max(0.1, multiplier);
+  }
+}
+
+function calculateRanking(post: any, mode: "web" | "api" = "web"): number {
+  const upvotes = post.upvotes || 0;
+  const downvotes = post.downvotes || 0;
+  const comments = post.commentsCount || 0;
+
+  const netVotes = upvotes - downvotes;
+  const totalVotes = upvotes + downvotes;
+  const voteRatio = totalVotes > 0 ? upvotes / totalVotes : 0;
+
+  // Mnożnik świeżości
+  const freshnessMultiplier = getFreshnessMultiplier(post.createdAt);
+
+  if (mode === "web") {
+    // Tryb webowy - większy nacisk na komentarze i zaangażowanie
+    const engagementScore = netVotes * 1.0 + comments * 0.5;
+    const qualityScore = voteRatio * 100;
+    const controversyBonus =
+      totalVotes > 10 && voteRatio > 0.4 && voteRatio < 0.6 ? 10 : 0;
+
+    const baseScore =
+      engagementScore * 0.5 + qualityScore * 0.3 + controversyBonus;
+    return baseScore * freshnessMultiplier;
+  } else {
+    // Tryb API - tylko najlepiej oceniane obrazy
+    const qualityScore = netVotes * voteRatio;
+    const popularityBonus = totalVotes > 50 ? Math.log(totalVotes) * 5 : 0;
+
+    const baseScore = qualityScore * 0.7 + popularityBonus;
+    return baseScore * freshnessMultiplier;
+  }
+}
+
 export async function GET(req: Request) {
   await dbConnect();
   console.log("hit db connect", new Date().getSeconds());
@@ -14,15 +68,24 @@ export async function GET(req: Request) {
   const matchAll = url.searchParams.get("matchAll") === "true";
   const matchExcludedAll = url.searchParams.get("matchExcludedAll") === "true";
   const specialTagsParam = url.searchParams.get("specialTags");
-  const sortBy = url.searchParams.get("sortBy");
+  const sortBy = url.searchParams.get("sortBy"); // null, "votes", lub "date"
   const sortOrder = url.searchParams.get("sortOrder") || "desc";
   const dateFrom = url.searchParams.get("dateFrom");
   const dateTo = url.searchParams.get("dateTo");
+
+  // Parametry dla paginacji i rankingu
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const limit = parseInt(url.searchParams.get("limit") || "40");
+  const rankingMode = url.searchParams.get("rankingMode") as
+    | "web"
+    | "api"
+    | null;
 
   try {
     const query: any = {};
     console.log(matchAll, tagsParam);
     console.log(matchExcludedAll, excludedTagsParam);
+
     // Filtrowanie tagów normalnych
     if (tagsParam) {
       const tags = tagsParam.split(",").map((t) => t.trim());
@@ -58,7 +121,6 @@ export async function GET(req: Request) {
           const specialTag = `${prefix}:${value}`;
 
           if (prefix === "danger" && value === "sfw") {
-            // Obsługa sfw: include sfw i brak nsfw
             if (!query.$and) query.$and = [];
             query.$and.push({
               $or: [
@@ -76,7 +138,7 @@ export async function GET(req: Request) {
       }
     }
 
-    // Filtrowanie  datach
+    // Filtrowanie po datach (to jest filter, nie sortowanie!)
     if (dateFrom || dateTo) {
       query.createdAt = {};
       if (dateFrom) {
@@ -87,36 +149,83 @@ export async function GET(req: Request) {
       }
     }
 
-    let postsQuery = Post.find(query);
+    if (sortBy === "votes" || sortBy === "date") {
+      // ZWYKŁE SORTOWANIE
+      let postsQuery = Post.find(query);
 
-    // Sortowanie
-    if (sortBy === "votes") {
-      postsQuery = postsQuery.sort(
-        sortOrder === "asc"
-          ? { upvotes: 1, downvotes: -1 }
-          : { upvotes: -1, downvotes: 1 }
+      if (sortBy === "votes") {
+        postsQuery = postsQuery.sort(
+          sortOrder === "asc"
+            ? { upvotes: 1, downvotes: -1 }
+            : { upvotes: -1, downvotes: 1 }
+        );
+      } else if (sortBy === "date") {
+        postsQuery = postsQuery.sort({
+          createdAt: sortOrder === "asc" ? 1 : -1,
+        });
+      }
+
+      // Paginacja
+      const skip = (page - 1) * limit;
+      postsQuery = postsQuery.skip(skip).limit(limit).lean();
+
+      const posts = await postsQuery;
+
+      // Dodatkowe sortowanie w JS dla votes
+      if (sortBy === "votes") {
+        posts.sort((a, b) => {
+          const scoreA = a.upvotes - a.downvotes;
+          const scoreB = b.upvotes - b.downvotes;
+          return sortOrder === "asc" ? scoreA - scoreB : scoreB - scoreA;
+        });
+      }
+
+      // Policz całkowitą liczbę dokumentów
+      const total = await Post.countDocuments(query);
+
+      return new NextResponse(
+        JSON.stringify({
+          posts,
+          page,
+          limit,
+          total,
+          hasMore: skip + limit < total,
+        }),
+        { status: 200 }
       );
-    } else if (sortBy === "date") {
-      postsQuery = postsQuery.sort({
-        createdAt: sortOrder === "asc" ? 1 : -1,
-      });
     } else {
-      postsQuery = postsQuery.sort({ createdAt: -1 });
+      const mode = rankingMode || "web";
+
+      // Pobierz posty
+      let postsQuery = Post.find(query).limit(1000).lean();
+      const allPosts = await postsQuery;
+
+      // Oblicz ranking dla każdego posta
+      const postsWithRanking = allPosts.map((post) => ({
+        ...post,
+        rankingScore: calculateRanking(post, mode),
+      }));
+
+      // Sortuj po rankingu
+      postsWithRanking.sort((a, b) => b.rankingScore - a.rankingScore);
+
+      // Paginacja
+      const skip = (page - 1) * limit;
+      const paginatedPosts = postsWithRanking.slice(skip, skip + limit);
+
+      const posts = paginatedPosts.map(({ rankingScore, ...post }) => post);
+
+      return new NextResponse(
+        JSON.stringify({
+          posts,
+          page,
+          limit,
+          total: postsWithRanking.length,
+          hasMore: skip + limit < postsWithRanking.length,
+        }),
+        { status: 200 }
+      );
     }
-
-    postsQuery = postsQuery.limit(100).lean();
-
-    const posts = await postsQuery;
-
-    if (sortBy === "votes") {
-      posts.sort((a, b) => {
-        const scoreA = a.upvotes - a.downvotes;
-        const scoreB = b.upvotes - b.downvotes;
-        return sortOrder === "asc" ? scoreA - scoreB : scoreB - scoreA;
-      });
-    }
-
-    return new NextResponse(JSON.stringify(posts), { status: 200 });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return new NextResponse(

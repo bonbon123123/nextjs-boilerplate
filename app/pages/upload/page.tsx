@@ -154,7 +154,7 @@ const UploadPage = () => {
                       AI Tagging...
                     </>
                   ) : (
-                    <>🤖 AI Tag All ({files.length})</>
+                    <>AI Tag All ({files.length})</>
                   )}
                 </button>
                 <button
