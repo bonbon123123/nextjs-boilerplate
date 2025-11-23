@@ -31,7 +31,6 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { userId } = useContext(SessionContext) || {};
 
-  // ML Service URL - ustaw w .env.local jako NEXT_PUBLIC_ML_SERVICE_URL
   const ML_SERVICE_URL =
     process.env.NEXT_PUBLIC_ML_SERVICE_URL || "http://localhost:8000";
 
@@ -69,7 +68,6 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
       const data = await response.json();
 
       if (data.success) {
-        // Połącz confident_tags i suggested_tags
         const allSuggestions = [
           ...data.confident_tags,
           ...data.suggested_tags.filter(
@@ -150,7 +148,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   };
 
   return (
-    <div className="bg-base-200 w-full md:w-[66vw] h-[85vh] flex flex-col items-center card shadow-lg">
+    <div className="bg-base-200 w-full h-[85vh] flex flex-col items-center card shadow-lg">
       {/* Image */}
       <div className="w-full h-[50%] flex justify-center items-center p-4">
         <Image
