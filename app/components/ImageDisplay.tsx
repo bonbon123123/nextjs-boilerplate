@@ -11,6 +11,11 @@ interface ImageDisplayProps {
   onTagsChange: (image: File, newTags: string[]) => void;
 }
 
+interface PredictedTag {
+  tag: string;
+  confidence: number;
+}
+
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
   image,
   onImageSubmit,
@@ -21,7 +26,14 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   const [imageHeight, setImageHeight] = useState<number>(0);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [aiTagging, setAiTagging] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState<PredictedTag[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const { userId } = useContext(SessionContext) || {};
+
+  // ML Service URL - ustaw w .env.local jako NEXT_PUBLIC_ML_SERVICE_URL
+  const ML_SERVICE_URL =
+    process.env.NEXT_PUBLIC_ML_SERVICE_URL || "http://localhost:8000";
 
   useEffect(() => {
     const img = document.createElement("img");
@@ -33,6 +45,67 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
     return () => URL.revokeObjectURL(img.src);
   }, [image]);
+
+  const handleAITagging = async () => {
+    setAiTagging(true);
+    setSuggestedTags([]);
+    setShowSuggestions(false);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", image);
+      formData.append("threshold", "0.3"); // Próg pewności
+      formData.append("top_k", "20"); // Top 20 sugestii
+
+      const response = await fetch(`${ML_SERVICE_URL}/predict`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`ML Service error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Połącz confident_tags i suggested_tags
+        const allSuggestions = [
+          ...data.confident_tags,
+          ...data.suggested_tags.filter(
+            (st: PredictedTag) =>
+              !data.confident_tags.find((ct: PredictedTag) => ct.tag === st.tag)
+          ),
+        ];
+
+        setSuggestedTags(allSuggestions);
+        setShowSuggestions(true);
+
+        // Automatycznie dodaj tagi z wysoką pewnością (>0.7)
+        const autoTags = data.confident_tags
+          .filter((t: PredictedTag) => t.confidence > 0.7)
+          .map((t: PredictedTag) => t.tag);
+
+        if (autoTags.length > 0) {
+          const newTags = [...new Set([...tags, ...autoTags])];
+          onTagsChange(image, newTags);
+        }
+      }
+    } catch (error) {
+      console.error("AI tagging error:", error);
+      alert(
+        "Failed to get AI suggestions. Please check if ML service is running."
+      );
+    } finally {
+      setAiTagging(false);
+    }
+  };
+
+  const addSuggestedTag = (tag: string) => {
+    if (!tags.includes(tag)) {
+      onTagsChange(image, [...tags, tag]);
+    }
+  };
 
   const handleSubmit = async () => {
     if (tags.length === 0) {
@@ -79,7 +152,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   return (
     <div className="bg-base-200 w-full md:w-[66vw] h-[85vh] flex flex-col items-center card shadow-lg">
       {/* Image */}
-      <div className="w-full h-[60%] flex justify-center items-center p-4">
+      <div className="w-full h-[50%] flex justify-center items-center p-4">
         <Image
           src={URL.createObjectURL(image)}
           width={imageWidth || 500}
@@ -101,6 +174,63 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
           </div>
         </div>
       </div>
+
+      {/* AI Tagging Button */}
+      <div className="w-full px-4 py-2">
+        <Button
+          onClick={handleAITagging}
+          disabled={aiTagging || uploading}
+          className="btn-secondary w-full"
+        >
+          {aiTagging ? (
+            <>
+              <span className="loading loading-spinner loading-sm"></span>
+              AI Analyzing...
+            </>
+          ) : (
+            <>🤖 Get AI Tag Suggestions</>
+          )}
+        </Button>
+      </div>
+
+      {/* AI Suggestions */}
+      {showSuggestions && suggestedTags.length > 0 && (
+        <div className="w-full px-4 py-2 max-h-32 overflow-y-auto border border-primary rounded-lg bg-base-300">
+          <p className="text-xs font-semibold mb-2 opacity-70">
+            AI Suggestions (click to add):
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {suggestedTags.map((predicted, idx) => {
+              const isAdded = tags.includes(predicted.tag);
+              const confidenceColor =
+                predicted.confidence > 0.7
+                  ? "badge-success"
+                  : predicted.confidence > 0.5
+                  ? "badge-warning"
+                  : "badge-ghost";
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => addSuggestedTag(predicted.tag)}
+                  disabled={isAdded}
+                  className={`badge ${confidenceColor} ${
+                    isAdded ? "opacity-50" : "cursor-pointer hover:scale-110"
+                  } transition-transform`}
+                  title={`Confidence: ${(predicted.confidence * 100).toFixed(
+                    1
+                  )}%`}
+                >
+                  {predicted.tag} {isAdded && "✓"}
+                  <span className="ml-1 text-xs opacity-70">
+                    {(predicted.confidence * 100).toFixed(0)}%
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Tags */}
       <div className="w-full flex-1 px-4 py-2 overflow-y-auto">

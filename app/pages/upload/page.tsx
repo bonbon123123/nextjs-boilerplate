@@ -12,6 +12,10 @@ interface FileWithTags {
 const UploadPage = () => {
   const [files, setFiles] = useState<FileWithTags[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [batchTagging, setBatchTagging] = useState(false);
+  const [batchProgress, setBatchProgress] = useState(0);
+
+  const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_SERVICE_URL;
 
   const handleImageSubmit = (fileToRemove: File) => {
     const newFiles = files.filter((f) => f.file !== fileToRemove);
@@ -72,6 +76,63 @@ const UploadPage = () => {
     }
   };
 
+  const handleBatchAITagging = async () => {
+    if (files.length === 0) return;
+
+    setBatchTagging(true);
+    setBatchProgress(0);
+
+    try {
+      const formData = new FormData();
+      files.forEach((fileWithTags) => {
+        formData.append("files", fileWithTags.file);
+      });
+
+      const response = await fetch(`${ML_SERVICE_URL}/predict-batch`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`ML Service error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.results) {
+        const updatedFiles = files.map((fileWithTags) => {
+          const result = data.results.find(
+            (r: any) => r.filename === fileWithTags.file.name
+          );
+
+          if (result && result.confident_tags) {
+            const autoTags = result.confident_tags
+              .filter((t: any) => t.confidence > 0.5)
+              .map((t: any) => t.tag);
+
+            const existingTags = fileWithTags.tags;
+            const newTags = [...new Set([...existingTags, ...autoTags])];
+
+            return { ...fileWithTags, tags: newTags };
+          }
+
+          return fileWithTags;
+        });
+
+        setFiles(updatedFiles);
+        alert(`Successfully tagged ${data.total_processed} images!`);
+      }
+    } catch (error) {
+      console.error("Batch AI tagging error:", error);
+      alert(
+        "Failed to perform batch AI tagging. Please check if ML service is running."
+      );
+    } finally {
+      setBatchTagging(false);
+      setBatchProgress(0);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-base-100 px-4 md:px-8 py-4">
       <div className="max-w-7xl mx-auto">
@@ -79,11 +140,32 @@ const UploadPage = () => {
           <h1 className="text-3xl font-bold text-base-content">
             Upload Images
           </h1>
-          {files.length > 0 && (
-            <button onClick={clearAllFiles} className="btn btn-error btn-sm">
-              Clear All ({files.length})
-            </button>
-          )}
+          <div className="flex gap-2">
+            {files.length > 0 && (
+              <>
+                <button
+                  onClick={handleBatchAITagging}
+                  disabled={batchTagging}
+                  className="btn btn-secondary btn-sm"
+                >
+                  {batchTagging ? (
+                    <>
+                      <span className="loading loading-spinner loading-xs"></span>
+                      AI Tagging...
+                    </>
+                  ) : (
+                    <>🤖 AI Tag All ({files.length})</>
+                  )}
+                </button>
+                <button
+                  onClick={clearAllFiles}
+                  className="btn btn-error btn-sm"
+                >
+                  Clear All ({files.length})
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Dropzone */}
@@ -113,6 +195,16 @@ const UploadPage = () => {
             )}
           </div>
         </div>
+
+        {/* Batch Progress */}
+        {batchTagging && (
+          <div className="card shadow-lg bg-base-200 p-4 mb-4">
+            <p className="text-sm font-semibold mb-2">
+              AI is analyzing {files.length} images...
+            </p>
+            <progress className="progress progress-secondary w-full"></progress>
+          </div>
+        )}
 
         {/* Image Display */}
         {files.length > 0 && (
