@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import Button from "./Button";
 import { SessionContext } from "../invisibleComponents/SessionProvider";
 import Image from "next/image";
@@ -16,6 +16,9 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const [voteFromDb, setVoteFromDb] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const imageRef = useRef<HTMLDivElement>(null);
+
   const sessionContext = useContext(SessionContext);
 
   if (!sessionContext) {
@@ -30,6 +33,32 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
 
   const [vote, setVote] = useState(initialVote);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
+
+  // Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: "200px",
+        threshold: 0.01,
+      }
+    );
+
+    if (imageRef.current) {
+      observer.observe(imageRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     setVote(getVote(image._id) || 0);
@@ -111,6 +140,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
 
   return (
     <div
+      ref={imageRef}
       className="overflow-hidden shadow-lg rounded-xl mb-4 border border-base-300 bg-base-100"
       style={{ maxHeight: "calc(100vw / 2)" }}
     >
@@ -120,21 +150,38 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
         </div>
       ) : (
         <div className="w-full">
-          {/* Image*/}
-          <Image
-            alt="Small image"
-            width={image.width}
-            height={image.height}
-            src={imageUrl}
-            onError={handleImageError}
-            onLoad={handleImageLoad}
-            className="w-full object-cover cursor-pointer"
-            unoptimized={imageUrl.startsWith("/images/")}
-            onClick={onClick}
-            style={{ maxHeight: "60vh", width: "100%", height: "auto" }}
-          />
+          {/* Image with lazy loading */}
+          {isVisible ? (
+            <Image
+              alt="Small image"
+              width={image.width}
+              height={image.height}
+              src={imageUrl}
+              onError={handleImageError}
+              onLoad={handleImageLoad}
+              className="w-full object-cover cursor-pointer"
+              unoptimized={imageUrl.startsWith("/images/")}
+              onClick={onClick}
+              style={{ maxHeight: "60vh", width: "100%", height: "auto" }}
+              loading="lazy"
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ddd'/%3E%3C/svg%3E"
+            />
+          ) : (
+            <div
+              className="w-full bg-base-300 animate-pulse"
+              style={{
+                aspectRatio: `${image.width}/${image.height}`,
+                maxHeight: "60vh",
+              }}
+            >
+              <div className="flex items-center justify-center h-full">
+                <span className="loading loading-spinner loading-md"></span>
+              </div>
+            </div>
+          )}
 
-          {/*  TAGS */}
+          {/* TAGS */}
           <div className="w-full h-8 flex items-center overflow-x-auto border-t border-base-300 bg-base-200 px-2">
             <div className="flex gap-2 whitespace-nowrap items-center">
               {image.tags?.map((tag, index) => (
@@ -151,7 +198,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
             </div>
           </div>
 
-          {/* BUTTONS  */}
+          {/* BUTTONS */}
           <div className="w-full h-10 flex items-center justify-between gap-2 px-2 border-t border-base-300 bg-base-200">
             <div className="flex gap-2">
               {(image.userId === sessionContext.userId ||

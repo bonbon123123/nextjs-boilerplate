@@ -179,6 +179,7 @@ const SearchPage = () => {
   return (
     <div className="min-h-screen bg-base-100 px-4 md:px-8 py-4">
       <div className="max-w-7xl mx-auto">
+        {/* change max width later?*/}
         <AdvancedSearch
           onSearch={(filters) => {
             const mergedFilters = {
@@ -192,7 +193,6 @@ const SearchPage = () => {
           initialFilters={currentFilters}
           extraTags={pendingTags}
         />
-
         {/* Current filters display */}
         {(currentFilters.tags.length > 0 ||
           Object.keys(currentFilters.specialTags).length > 0) && (
@@ -215,7 +215,6 @@ const SearchPage = () => {
             )}
           </div>
         )}
-
         {loading ? (
           <div className="flex justify-center items-center min-h-96">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -231,7 +230,7 @@ const SearchPage = () => {
           </div>
         ) : (
           <>
-            <div className="w-full flex gap-4">
+            <div className="w-full flex gap-2 p-4">
               {columns.map((column, index) => (
                 <div key={index} className="w-1/4">
                   {column.map((image) => (
