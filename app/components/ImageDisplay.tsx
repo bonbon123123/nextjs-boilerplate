@@ -148,7 +148,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   };
 
   return (
-    <div className="bg-base-200 w-full h-[85vh] flex flex-col items-center card shadow-lg">
+    <div className="bg-base-200 w-full flex flex-col items-center card shadow-lg">
       {/* Image */}
       <div className="w-full h-[50%] flex justify-center items-center p-4">
         <Image
@@ -163,9 +163,9 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
 
       {/* Info */}
       <div className="w-full px-4 py-2">
-        <div className="grid grid-cols-2 gap-2 text-xs opacity-70">
+        <div className="flex justify-center gap-2  opacity-70">
           <div>
-            <span>Size:</span> {(image.size / 1024).toFixed(2)} KB
+            <span>Size:</span> {(image.size * 0.000000125).toFixed(2)} MB
           </div>
           <div>
             <span>Dimensions:</span> {imageWidth} × {imageHeight}
