@@ -183,9 +183,9 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     setSavedPosts((prevSavedPosts) => {
       const updatedPosts = new Set(prevSavedPosts);
       if (updatedPosts.has(id)) {
-        updatedPosts.delete(id); // Usunięcie id, jeśli już istnieje w savedPosts
+        updatedPosts.delete(id);
       } else {
-        updatedPosts.add(id); // Dodanie id, jeśli jeszcze nie istnieje
+        updatedPosts.add(id);
       }
       localStorage.setItem("savedPosts", JSON.stringify([...updatedPosts])); // Konwersja do tablicy przed zapisaniem
       return updatedPosts;
@@ -214,57 +214,45 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addVote = (id: string, voteValue: number) => {
-    const currentVote = getVote(id);
-    let newVote = 0;
-    if (!currentVote || currentVote == 0) {
-      newVote = voteValue;
-    } else if (currentVote == -voteValue) {
-      newVote = -currentVote * 2;
-    } else if (currentVote == 1 || (currentVote == -1 && voteValue == 0)) {
-      newVote = -currentVote;
+    const currentVote = getVote(id) || 0;
+
+    // Oblicz różnicę dla backendu
+    let voteDelta = 0;
+
+    if (currentVote === 0 && voteValue === 1) {
+      voteDelta = 1; // dodaj upvote
+    } else if (currentVote === 0 && voteValue === -1) {
+      voteDelta = -1; // dodaj downvote
+    } else if (currentVote === 1 && voteValue === 0) {
+      voteDelta = -1; // usuń upvote
+    } else if (currentVote === 1 && voteValue === -1) {
+      voteDelta = -2; // zmień upvote na downvote
+    } else if (currentVote === -1 && voteValue === 0) {
+      voteDelta = 1; // usuń downvote
+    } else if (currentVote === -1 && voteValue === 1) {
+      voteDelta = 2; // zmień downvote na upvote
     }
 
+    // Aktualizuj lokalny stan
     setVotes((prevVotes) => {
       const updatedVotes = { ...prevVotes, [id]: voteValue };
-      localStorage.setItem("votes", JSON.stringify(updatedVotes)); // Aktualizacja localStorage
+      localStorage.setItem("votes", JSON.stringify(updatedVotes));
       return updatedVotes;
     });
 
+    // Wyślij do backendu
     fetch("/api/mongo/posts", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ _id: id, vote: newVote }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Error updating vote: ${response.status}`);
-        }
-      })
-      .catch((error) => console.error(error));
-    console.log("oddaje taki głos: voteValue");
-    console.log(voteValue);
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ _id: id, vote: voteDelta }),
+    });
+
     if (userId != null) {
-      let targetId = id;
       fetch("/api/mongo/voting", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          targetId,
-          voteValue,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          //console.log('Nie error:', data);
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, targetId: id, voteValue }),
+      });
     }
   };
 

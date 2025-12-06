@@ -67,7 +67,6 @@ const SearchPage = () => {
     []
   );
 
-  // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {

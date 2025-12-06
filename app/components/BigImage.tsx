@@ -6,6 +6,7 @@ import { SessionContext } from "../invisibleComponents/SessionProvider";
 import Image from "next/image";
 import Post from "../interfaces/Post";
 import { getTagColor } from "../interfaces/tags";
+
 interface BigImageProps {
   image: Post;
   onClose: () => void;
@@ -15,9 +16,7 @@ interface BigImageProps {
 const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
   const [imageUrl, setImageUrl] = useState(image.url);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [vote, setVote] = useState(0);
   const [showCommentForm, setShowCommentForm] = useState(false);
-  const [voteFromDb, setVoteFromDb] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
 
   const sessionContext = useContext(SessionContext);
@@ -31,7 +30,12 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
     throw new Error("SessionContext is not provided");
   }
 
-  const { addVote, getVote, addSave, getSave } = sessionContext;
+  const { addVote, getVote, addSave, getSave, votes, savedPosts } =
+    sessionContext;
+
+  // Zapisz pierwotny głos gdy komponent się montuje
+  const [initialVote] = useState(() => getVote(image._id) || 0);
+  const [vote, setVote] = useState(getVote(image._id) || 0);
 
   const handleCommentOn = () => {
     setShowCommentForm(!showCommentForm);
@@ -42,23 +46,14 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
   };
 
   useEffect(() => {
-    const currentVote = getVote(image._id);
-    if (typeof currentVote === "number") {
-      setVoteFromDb(currentVote);
-    }
-    const currentSave = getSave(image._id);
-    if (currentSave) setIsSaved(true);
-  }, [image._id, getVote, getSave]);
-
-  useEffect(() => {
     const currentSave = getSave(image._id);
     setIsSaved(!!currentSave);
-  }, [image._id, sessionContext.savedPosts, getSave]);
+  }, [image._id, savedPosts, getSave]);
 
   useEffect(() => {
-    const currentSave = getSave(image._id);
-    setIsSaved(!!currentSave);
-  }, [image._id, sessionContext.savedPosts, getSave]);
+    const currentVote = getVote(image._id) || 0;
+    setVote(currentVote);
+  }, [image._id, votes, getVote]);
 
   const handleSave = async () => {
     if (sessionContext.userId) {
@@ -70,25 +65,17 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
   };
 
   const handleUpvote = () => {
-    const currentVote = getVote(image._id);
-    if (currentVote === 1) {
-      setVote(0);
-      addVote(image._id, 0);
-    } else {
-      setVote(1);
-      addVote(image._id, 1);
-    }
+    const currentVote = getVote(image._id) || 0;
+    const newVote = currentVote === 1 ? 0 : 1;
+    setVote(newVote);
+    addVote(image._id, newVote);
   };
 
   const handleDownvote = () => {
-    const currentVote = getVote(image._id);
-    if (currentVote === -1) {
-      setVote(0);
-      addVote(image._id, 0);
-    } else {
-      setVote(-1);
-      addVote(image._id, -1);
-    }
+    const currentVote = getVote(image._id) || 0;
+    const newVote = currentVote === -1 ? 0 : -1;
+    setVote(newVote);
+    addVote(image._id, newVote);
   };
 
   const handleImageError = () => {
@@ -170,19 +157,28 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
                   <Button onClick={handleCommentOn} clicked={showCommentForm}>
                     Comment
                   </Button>
-                  <Button onClick={handleSave} clicked={isSaved}>
+                  <Button
+                    onClick={handleSave}
+                    className={isSaved ? "btn-saved" : ""}
+                  >
                     Save
                   </Button>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button onClick={handleUpvote} clicked={vote == 1}>
+                  <Button
+                    onClick={handleUpvote}
+                    className={vote === 1 ? "btn-upvoted" : ""}
+                  >
                     ↑
                   </Button>
                   <span className="vote-display">
-                    {image.upvotes - image.downvotes + vote - voteFromDb}
+                    {image.upvotes - image.downvotes + vote - initialVote}
                   </span>
-                  <Button onClick={handleDownvote} clicked={vote == -1}>
+                  <Button
+                    onClick={handleDownvote}
+                    className={vote === -1 ? "btn-downvoted" : ""}
+                  >
                     ↓
                   </Button>
                 </div>

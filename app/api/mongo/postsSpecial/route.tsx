@@ -6,11 +6,10 @@ import mongoose from "mongoose";
 
 export async function POST(req: Request) {
   const { userId, type } = await req.json();
-  console.log(userId, type);
   if (!userId || !type) {
     return new NextResponse(
       JSON.stringify({ error: "Brak wymaganych parametrów" }),
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -19,7 +18,7 @@ export async function POST(req: Request) {
   if (!user) {
     return new NextResponse(
       JSON.stringify({ error: "Użytkownik nie istnieje" }),
-      { status: 404 },
+      { status: 404 }
     );
   }
 
@@ -32,11 +31,11 @@ export async function POST(req: Request) {
     case "liked":
       const likedPostIds = user.votes
         .filter(
-          (vote: { postId: string; voteValue: number }) => vote.voteValue === 1,
+          (vote: { postId: string; voteValue: number }) => vote.voteValue === 1
         )
         .map((vote: { postId: string }) => vote.postId);
       const objectIds = likedPostIds.map(
-        (id: string) => new mongoose.Types.ObjectId(id),
+        (id: string) => new mongoose.Types.ObjectId(id)
       );
       posts = await Post.find({ _id: { $in: objectIds } }).lean();
       break;

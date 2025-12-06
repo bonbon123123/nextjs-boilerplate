@@ -48,6 +48,15 @@ body {
 .btn {
   @apply p-3;
 }
+.btn-upvoted {
+  @apply bg-success text-success-content border-2 border-success font-bold shadow-lg;
+}
+.btn-downvoted {
+  @apply bg-error text-error-content border-2 border-error font-bold shadow-lg;
+}
+.btn-saved {
+  @apply bg-warning text-warning-content border-2 border-warning font-bold shadow-lg;
+}
 .badge-info {
   @apply bg-info text-info-content;
 }

@@ -15,7 +15,6 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   const [imageUrl, setImageUrl] = useState(image.url);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
-  const [voteFromDb, setVoteFromDb] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
 
@@ -28,11 +27,10 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   const { addVote, getVote, addSave, getSave, votes, savedPosts } =
     sessionContext;
 
-  const initialVote = getVote(image._id) || 0;
-  const initialIsSaved = getSave(image._id);
-
-  const [vote, setVote] = useState(initialVote);
-  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  // Zapisz pierwotny głos gdy komponent się montuje
+  const [initialVote] = useState(() => getVote(image._id) || 0);
+  const [vote, setVote] = useState(getVote(image._id) || 0);
+  const [isSaved, setIsSaved] = useState(getSave(image._id));
 
   // Intersection Observer
   useEffect(() => {
@@ -61,9 +59,14 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   }, []);
 
   useEffect(() => {
-    setVote(getVote(image._id) || 0);
     setIsSaved(getSave(image._id));
-  }, [votes, savedPosts, image._id, getVote, getSave]);
+  }, [savedPosts, image._id, getSave]);
+
+  // Synchronizuj lokalny stan vote gdy zmienia się w SessionProvider
+  useEffect(() => {
+    const currentVote = getVote(image._id) || 0;
+    setVote(currentVote);
+  }, [votes, image._id, getVote]);
 
   const handleSave = async () => {
     if (sessionContext.userId) {
@@ -100,25 +103,17 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   };
 
   const handleUpvote = () => {
-    const currentVote = getVote(image._id);
-    if (currentVote === 1) {
-      setVote(0);
-      addVote(image._id, 0);
-    } else {
-      setVote(1);
-      addVote(image._id, 1);
-    }
+    const currentVote = getVote(image._id) || 0;
+    const newVote = currentVote === 1 ? 0 : 1;
+    setVote(newVote);
+    addVote(image._id, newVote);
   };
 
   const handleDownvote = () => {
-    const currentVote = getVote(image._id);
-    if (currentVote === -1) {
-      setVote(0);
-      addVote(image._id, 0);
-    } else {
-      setVote(-1);
-      addVote(image._id, -1);
-    }
+    const currentVote = getVote(image._id) || 0;
+    const newVote = currentVote === -1 ? 0 : -1;
+    setVote(newVote);
+    addVote(image._id, newVote);
   };
 
   const handleImageError = () => {
@@ -210,26 +205,27 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button onClick={handleSave} clicked={isSaved} className="btn-xs">
+              <Button
+                onClick={handleSave}
+                className={`btn-xs ${isSaved ? "btn-saved" : ""}`}
+              >
                 Save
               </Button>
 
               <Button
                 onClick={handleUpvote}
-                clicked={vote === 1}
-                className="btn-xs"
+                className={`btn-xs ${vote === 1 ? "btn-upvoted" : ""}`}
               >
                 ↑
               </Button>
 
               <span className="text-sm">
-                {image.upvotes - image.downvotes + vote - voteFromDb}
+                {image.upvotes - image.downvotes + vote - initialVote}
               </span>
 
               <Button
                 onClick={handleDownvote}
-                clicked={vote === -1}
-                className="btn-xs"
+                className={`btn-xs ${vote === -1 ? "btn-downvoted" : ""}`}
               >
                 ↓
               </Button>
