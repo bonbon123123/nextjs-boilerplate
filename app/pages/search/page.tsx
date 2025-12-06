@@ -99,7 +99,7 @@ const SearchPage = () => {
 
   useEffect(() => {
     fetchImages(currentFilters, 1, false);
-  }, []);
+  }, [currentFilters, fetchImages]);
 
   const buildQueryString = (
     filters: SearchFilters,

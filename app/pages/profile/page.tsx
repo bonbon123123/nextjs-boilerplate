@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useCallback } from "react";
 import { SessionContext } from "@/app/invisibleComponents/SessionProvider";
 import BigImage from "@/app/components/BigImage";
 import Post from "@/app/interfaces/Post";
@@ -98,7 +98,7 @@ const UserPage = () => {
     setFilteredImages(result);
   };
 
-  const fetchImages = async (type: string) => {
+  const fetchImages = useCallback(async (type: string) => {
     setLoading(true);
     try {
       const response = await fetch("/api/mongo/postsSpecial", {
@@ -115,7 +115,7 @@ const UserPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionContext?.userId]);
 
   useEffect(() => {
     if (!sessionContext?.userId) return;
@@ -125,7 +125,7 @@ const UserPage = () => {
       saved: "saved",
     };
     fetchImages(typeMap[activeSection]);
-  }, [activeSection, sessionContext?.userId, currentFilters]);
+  }, [activeSection, sessionContext?.userId, fetchImages]);
 
   if (!sessionContext?.userId) {
     return (

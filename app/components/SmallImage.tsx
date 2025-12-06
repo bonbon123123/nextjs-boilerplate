@@ -63,7 +63,7 @@ const SmallImage: React.FC<Props> = ({ image, onClick, onTagClick }) => {
   useEffect(() => {
     setVote(getVote(image._id) || 0);
     setIsSaved(getSave(image._id));
-  }, [votes, savedPosts, image._id]);
+  }, [votes, savedPosts, image._id, getVote, getSave]);
 
   const handleSave = async () => {
     if (sessionContext.userId) {
