@@ -97,7 +97,7 @@ const Comment: React.FC<CommentProps> = ({ comment, onReplyAdded }) => {
             />
           )}
           {replies && replies.length > 0 && (
-            <div className="ml-4 mt-2 border-l-2 border-primary pl-2">
+            <div className="-ml-4 mt-2 pl-2">
               {replies.map((reply, index) => (
                 <Comment
                   key={reply._id || index}
