@@ -44,43 +44,6 @@ const UserPage = () => {
   });
 
   const sessionContext = useContext(SessionContext);
-  
-  if (!sessionContext?.userId) {
-    return (
-      <div className="min-h-screen bg-base-100 flex items-center justify-center">
-        <p className="text-lg opacity-70">Zaloguj się aby zobaczyć swój profil</p>
-      </div>
-    );
-  }
-
-  const fetchImages = async (type: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/mongo/postsSpecial", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: sessionContext.userId,
-          type: type,
-        }),
-      });
-      const data = await response.json();
-      setAllImages(data);
-      applyFilters(data, currentFilters);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!sessionContext?.userId) return;
-    const typeMap: { [key: string]: string } = {
-      added: "author",
-      liked: "liked",
-      saved: "saved",
-    };
-    fetchImages(typeMap[activeSection]);
-  }, [activeSection]);
 
   const applyFilters = (images: Post[], filters: SearchFilters) => {
     let result = [...images];
@@ -134,6 +97,45 @@ const UserPage = () => {
 
     setFilteredImages(result);
   };
+
+  const fetchImages = async (type: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/mongo/postsSpecial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: sessionContext?.userId,
+          type: type,
+        }),
+      });
+      const data = await response.json();
+      setAllImages(data);
+      applyFilters(data, currentFilters);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!sessionContext?.userId) return;
+    const typeMap: { [key: string]: string } = {
+      added: "author",
+      liked: "liked",
+      saved: "saved",
+    };
+    fetchImages(typeMap[activeSection]);
+  }, [activeSection, sessionContext?.userId, currentFilters]);
+
+  if (!sessionContext?.userId) {
+    return (
+      <div className="min-h-screen bg-base-100 flex items-center justify-center">
+        <p className="text-lg opacity-70">
+          Zaloguj się aby zobaczyć swój profil
+        </p>
+      </div>
+    );
+  }
 
   const handleSearch = (filters: SearchFilters) => {
     const merged = {
@@ -194,14 +196,17 @@ const UserPage = () => {
     }
 
     const columns: Post[][] = [[], [], [], []];
-    filteredImages.forEach((image, index) => {
-      columns[index % 4].push(image);
-    });
+    for (let index = 0; index < filteredImages.length; index += 1) {
+      columns[index % 4].push(filteredImages[index]);
+    }
 
     return (
       <div className="w-full flex gap-2 p-4">
-        {columns.map((column, index) => (
-          <div key={index} className="w-1/4">
+        {columns.map((column) => (
+          <div
+            key={column.map((img) => img._id).join("-") || "empty"}
+            className="w-1/4"
+          >
             {column.map((image) => (
               <ImageTile
                 key={image._id}
