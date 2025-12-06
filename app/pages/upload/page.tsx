@@ -123,7 +123,6 @@ const UploadPage = () => {
         });
 
         setFiles(updatedFiles);
-        // show Upload All button after AI tagging completes
         setShowUploadAll(true);
         alert(`Successfully tagged ${data.total_processed} images!`);
       }
@@ -148,9 +147,7 @@ const UploadPage = () => {
         const fileWithTags = files[i];
         const formData = new FormData();
         formData.append("files", fileWithTags.file);
-        // route expects tags as JSON string
         formData.append("tags", JSON.stringify(fileWithTags.tags || []));
-        // optional fields; width/height left as 0 (server handles)
         formData.append("userId", "");
 
         const res = await fetch("/api/uploadthing/fileUpload", {
@@ -169,7 +166,6 @@ const UploadPage = () => {
       }
 
       alert("All files uploaded successfully");
-      // clear files after upload
       setFiles([]);
       setCurrentIndex(0);
       setShowUploadAll(false);

@@ -18,6 +18,8 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [similarImages, setSimilarImages] = useState<Post[]>([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
 
   const sessionContext = useContext(SessionContext);
   const handleTagClick = (tag: string, e: React.MouseEvent) => {
@@ -54,6 +56,33 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
     const currentVote = getVote(image._id) || 0;
     setVote(currentVote);
   }, [image._id, votes, getVote]);
+
+  // Fetch similar images based on tags
+  useEffect(() => {
+    const fetchSimilarImages = async () => {
+      if (!image.tags || image.tags.length === 0) return;
+
+      setLoadingSimilar(true);
+      try {
+        const params = new URLSearchParams();
+        params.append("tags", image.tags.join(","));
+        params.append("matchAll", "false"); // any tag matches
+        params.append("limit", "3");
+        params.append("excludeId", image._id); // exclude current image
+
+        const response = await fetch(`/api/mongo/posts?${params.toString()}`);
+        const data = await response.json();
+
+        setSimilarImages(data.posts || []);
+      } catch (error) {
+        console.error("Error fetching similar images:", error);
+      } finally {
+        setLoadingSimilar(false);
+      }
+    };
+
+    fetchSimilarImages();
+  }, [image._id, image.tags]);
 
   const handleSave = async () => {
     if (sessionContext.userId) {
@@ -105,12 +134,46 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
           {/* Three-column layout */}
           <div className="flex-1 flex gap-4 min-h-0 px-6 md:px-8 lg:px-10">
             {/* LEFT SIDEBAR */}
-            <div className="w-[280px] flex-shrink-0 bg-base-200 flex flex-col rounded-lg border-2 border-primary shadow-md overflow-y-auto">
-              <div className="p-4">
-                <h3 className="font-semibold text-sm mb-3">Similar</h3>
-                <div className="text-xs text-base-content opacity-60">
-                  Similar images will appear here
-                </div>
+            <div className="w-[280px] flex-shrink-0 bg-base-200 flex flex-col rounded-lg border-2 border-primary shadow-md overflow-hidden">
+              <div className="p-4 border-b-2 border-primary bg-base-300 flex-shrink-0">
+                <h3 className="font-bold text-lg text-center">Similar</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2">
+                {loadingSimilar ? (
+                  <div className="flex items-center justify-center h-full">
+                    <span className="loading loading-spinner loading-md"></span>
+                  </div>
+                ) : similarImages.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    {similarImages.map((similarImage) => (
+                      <div
+                        key={similarImage._id}
+                        className="cursor-pointer hover:opacity-80 transition-opacity rounded-lg overflow-hidden border border-base-300"
+                        onClick={() => {
+                          // Close current and open new image
+                          onClose();
+                          setTimeout(() => {
+                            // You might need to implement navigation to the new image
+                            // This depends on your app structure
+                          }, 100);
+                        }}
+                      >
+                        <Image
+                          src={similarImage.url}
+                          alt="Similar image"
+                          width={similarImage.width}
+                          height={similarImage.height}
+                          className="w-full h-auto object-cover"
+                          style={{ maxHeight: "150px" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-base-content opacity-60 text-center p-4">
+                    No similar images found
+                  </div>
+                )}
               </div>
             </div>
 
@@ -200,7 +263,9 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
 
             {/*  Comments section */}
             <div className="w-[320px] flex-shrink-0 bg-base-200 flex flex-col rounded-lg border-2 border-primary shadow-md overflow-hidden">
-              <div className="p-4 border-b border-base-300 flex-shrink-0"></div>
+              <div className="p-4 border-b-2 border-primary bg-base-300 flex-shrink-0">
+                <h3 className="font-bold text-lg text-center">Comments</h3>
+              </div>
               <div className="flex-1 overflow-y-auto">
                 <CommentSection image={image} />
               </div>

@@ -72,7 +72,7 @@ export async function GET(req: Request) {
   const sortOrder = url.searchParams.get("sortOrder") || "desc";
   const dateFrom = url.searchParams.get("dateFrom");
   const dateTo = url.searchParams.get("dateTo");
-
+  const excludeId = url.searchParams.get("excludeId");
   // Parametry dla paginacji i rankingu
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "40");
@@ -83,9 +83,6 @@ export async function GET(req: Request) {
 
   try {
     const query: any = {};
-    console.log(matchAll, tagsParam);
-    console.log(matchExcludedAll, excludedTagsParam);
-
     // Filtrowanie tagów normalnych
     if (tagsParam) {
       const tags = tagsParam.split(",").map((t) => t.trim());
@@ -97,7 +94,9 @@ export async function GET(req: Request) {
         }
       }
     }
-
+    if (excludeId) {
+      query._id = { $ne: excludeId };
+    }
     if (excludedTagsParam) {
       const excludedTags = excludedTagsParam.split(",").map((t) => t.trim());
       if (excludedTags.length > 0) {
