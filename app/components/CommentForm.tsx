@@ -1,10 +1,10 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 
 interface Props {
   parentId: String;
   postId: String;
   userId: String | null;
-  onSubmit?: () => void;
+  onSubmit?: (comment: any) => void;
   onCancel?: () => void;
 }
 
@@ -41,8 +41,9 @@ const CommentForm: React.FC<Props> = ({
       });
 
       if (response.ok) {
+        const newComment = await response.json();
         setText("");
-        if (onSubmit) onSubmit();
+        if (onSubmit) onSubmit(newComment);
       } else {
         const data = await response.json();
         setError(data.message || "Failed to post comment");

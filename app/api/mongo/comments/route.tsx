@@ -97,7 +97,7 @@ export async function GET(req: Request) {
     console.error("Error fetching comments:", error);
     return new NextResponse(
       JSON.stringify({ message: "Error fetching comments", error }),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -119,6 +119,7 @@ export async function POST(req: Request) {
     if (data.parentId === "null") {
       data.parentId = null;
     }
+
     // Sprawdzamy czy to odpowiedź na inny komentarz
     if (data.parentId !== null) {
       // Sprawdzamy czy komentarz-rodzic istnieje
@@ -126,7 +127,7 @@ export async function POST(req: Request) {
       if (!parentComment) {
         return new NextResponse(
           JSON.stringify({ message: "Parent comment not found" }),
-          { status: 404 },
+          { status: 404 }
         );
       }
 
@@ -136,7 +137,7 @@ export async function POST(req: Request) {
           JSON.stringify({
             message: "Parent comment belongs to different post",
           }),
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -144,12 +145,16 @@ export async function POST(req: Request) {
     const newComment = new Comment(data);
     await newComment.save();
 
+    if (newComment.userId) {
+      await newComment.populate("userId", "username");
+    }
+
     return new NextResponse(JSON.stringify(newComment), { status: 201 });
   } catch (error) {
     console.error("Error adding comment:", error);
     return new NextResponse(
       JSON.stringify({ message: "Error adding comment", error }),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -172,7 +177,7 @@ export async function PATCH(req: Request) {
     if (!comment) {
       return new NextResponse(
         JSON.stringify({ message: "Comment not found" }),
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -209,7 +214,7 @@ export async function PATCH(req: Request) {
     console.error("Error updating comment:", error);
     return new NextResponse(
       JSON.stringify({ message: "Error updating comment", error }),
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -229,7 +234,7 @@ export async function DELETE(req: Request) {
     if (!comment) {
       return NextResponse.json(
         { message: "Comment not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -263,13 +268,13 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json(
       { message: "Comment and its replies deleted successfully" },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error deleting comment and its replies:", error);
     return NextResponse.json(
       { message: "Error deleting comment and its replies", error },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

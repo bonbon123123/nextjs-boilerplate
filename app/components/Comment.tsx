@@ -6,9 +6,10 @@ import CommentSchema from "../interfaces/CommentSchema";
 
 interface CommentProps {
   comment: CommentSchema;
+  onReplyAdded?: (reply: any) => void;
 }
 
-const Comment: React.FC<CommentProps> = ({ comment }) => {
+const Comment: React.FC<CommentProps> = ({ comment, onReplyAdded }) => {
   const [replies, setReplies] = useState<CommentSchema[]>();
   const [isReplying, setIsReplying] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
@@ -17,12 +18,19 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
   if (!sessionContext) {
     throw new Error("SessionContext is not provided");
   }
+
   useEffect(() => {
     setReplies(comment.replies);
   }, [comment]);
 
-  const handleReplySubmit = () => {
+  const handleReplySubmit = (newReply: any) => {
     setIsReplying(false);
+
+    setReplies((prev) => [...(prev || []), newReply]);
+
+    if (onReplyAdded) {
+      onReplyAdded(newReply);
+    }
   };
 
   const handleDelete = async () => {
@@ -48,7 +56,7 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
       console.error("Error deleting post:", error);
     }
   };
-  console.log(comment);
+
   return (
     <div className="comment-container">
       {isDeleted ? (
@@ -91,7 +99,11 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
           {replies && replies.length > 0 && (
             <div className="ml-4 mt-2 border-l-2 border-primary pl-2">
               {replies.map((reply, index) => (
-                <Comment key={index} comment={reply} />
+                <Comment
+                  key={reply._id || index}
+                  comment={reply}
+                  onReplyAdded={onReplyAdded}
+                />
               ))}
             </div>
           )}

@@ -20,6 +20,7 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [similarImages, setSimilarImages] = useState<Post[]>([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
 
   const sessionContext = useContext(SessionContext);
   const handleTagClick = (tag: string, e: React.MouseEvent) => {
@@ -43,8 +44,33 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
     setShowCommentForm(!showCommentForm);
   };
 
-  const handleReplySubmit = () => {
+  const handleReplySubmit = (newComment: any) => {
     setShowCommentForm(false);
+    if (!newComment.parentId || newComment.parentId === "null") {
+      // Główny komentarz (parentId jest null lub "null")
+      setComments((prev) => [newComment, ...prev]);
+    } else {
+      // Odpowiedź na komentarz - dodaj rekurencyjnie
+      setComments((prev) => addReplyToComment(prev, newComment));
+    }
+  };
+
+  const addReplyToComment = (comments: any[], newReply: any): any[] => {
+    return comments.map((comment) => {
+      if (comment._id === newReply.parentId) {
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), newReply],
+        };
+      }
+      if (comment.replies && comment.replies.length > 0) {
+        return {
+          ...comment,
+          replies: addReplyToComment(comment.replies, newReply),
+        };
+      }
+      return comment;
+    });
   };
 
   useEffect(() => {
@@ -56,6 +82,20 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
     const currentVote = getVote(image._id) || 0;
     setVote(currentVote);
   }, [image._id, votes, getVote]);
+
+  // Fetch comments
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await fetch(`/api/mongo/comments?postId=${image._id}`);
+        const data = await response.json();
+        setComments(data || []);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+    fetchComments();
+  }, [image._id]);
 
   // Fetch similar images based on tags
   useEffect(() => {
@@ -150,12 +190,8 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
                         key={similarImage._id}
                         className="cursor-pointer hover:opacity-80 transition-opacity rounded-lg overflow-hidden border border-base-300"
                         onClick={() => {
-                          // Close current and open new image
                           onClose();
-                          setTimeout(() => {
-                            // You might need to implement navigation to the new image
-                            // This depends on your app structure
-                          }, 100);
+                          setTimeout(() => {}, 100);
                         }}
                       >
                         <Image
@@ -267,7 +303,11 @@ const BigImage: React.FC<BigImageProps> = ({ image, onClose, onTagClick }) => {
                 <h3 className="font-bold text-lg text-center">Comments</h3>
               </div>
               <div className="flex-1 overflow-y-auto">
-                <CommentSection image={image} />
+                <CommentSection
+                  image={image}
+                  comments={comments}
+                  onCommentAdded={handleReplySubmit}
+                />
               </div>
             </div>
           </div>

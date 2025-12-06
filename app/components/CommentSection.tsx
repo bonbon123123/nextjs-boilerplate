@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import Comment from "./Comment";
 import CommentSchema from "../interfaces/CommentSchema";
 
@@ -18,23 +17,23 @@ interface Props {
     type: string;
     _id: string;
   };
+  comments: CommentSchema[];
+  onCommentAdded: (comment: any) => void;
 }
 
-const CommentSection: React.FC<Props> = ({ image }) => {
-  const [comments, setComments] = useState<CommentSchema[]>();
-
-  useEffect(() => {
-    fetch(`/api/mongo/comments?postId=${image._id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setComments(data as CommentSchema[]);
-      });
-  }, [image._id]);
-
+const CommentSection: React.FC<Props> = ({
+  image,
+  comments,
+  onCommentAdded,
+}) => {
   return (
     <div className="w-full h-full bg-base-200 p-2 overflow-y-auto">
       {comments?.map((comment, index) => (
-        <Comment comment={comment} key={index} />
+        <Comment
+          comment={comment}
+          key={comment._id || index}
+          onReplyAdded={onCommentAdded}
+        />
       ))}
     </div>
   );
