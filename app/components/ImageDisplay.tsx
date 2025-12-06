@@ -53,8 +53,8 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
     try {
       const formData = new FormData();
       formData.append("file", image);
-      formData.append("threshold", "0.3"); // Próg pewności
-      formData.append("top_k", "20"); // Top 20 sugestii
+      formData.append("threshold", "0.3");
+      formData.append("top_k", "20");
 
       const response = await fetch(`${ML_SERVICE_URL}/predict`, {
         method: "POST",

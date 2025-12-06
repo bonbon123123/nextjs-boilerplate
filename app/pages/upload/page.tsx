@@ -14,6 +14,9 @@ const UploadPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [batchTagging, setBatchTagging] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
+  const [showUploadAll, setShowUploadAll] = useState(false);
+  const [uploadingAll, setUploadingAll] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_SERVICE_URL;
 
@@ -120,6 +123,8 @@ const UploadPage = () => {
         });
 
         setFiles(updatedFiles);
+        // show Upload All button after AI tagging completes
+        setShowUploadAll(true);
         alert(`Successfully tagged ${data.total_processed} images!`);
       }
     } catch (error) {
@@ -130,6 +135,50 @@ const UploadPage = () => {
     } finally {
       setBatchTagging(false);
       setBatchProgress(0);
+    }
+  };
+
+  const uploadAll = async () => {
+    if (files.length === 0) return;
+    setUploadingAll(true);
+    setUploadProgress(0);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const fileWithTags = files[i];
+        const formData = new FormData();
+        formData.append("files", fileWithTags.file);
+        // route expects tags as JSON string
+        formData.append("tags", JSON.stringify(fileWithTags.tags || []));
+        // optional fields; width/height left as 0 (server handles)
+        formData.append("userId", "");
+
+        const res = await fetch("/api/uploadthing/fileUpload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(
+            data.error || `Upload failed for ${fileWithTags.file.name}`
+          );
+        }
+
+        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
+      }
+
+      alert("All files uploaded successfully");
+      // clear files after upload
+      setFiles([]);
+      setCurrentIndex(0);
+      setShowUploadAll(false);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Upload all failed: ${err.message || err}`);
+    } finally {
+      setUploadingAll(false);
+      setUploadProgress(0);
     }
   };
 
@@ -163,6 +212,23 @@ const UploadPage = () => {
                 >
                   Clear All ({files.length})
                 </button>
+                {(showUploadAll ||
+                  (files.length > 0 && currentIndex === files.length - 1)) && (
+                  <button
+                    onClick={uploadAll}
+                    disabled={uploadingAll}
+                    className="btn btn-primary btn-sm"
+                  >
+                    {uploadingAll ? (
+                      <>
+                        <span className="loading loading-spinner loading-xs"></span>
+                        Uploading {uploadProgress}%
+                      </>
+                    ) : (
+                      <>Upload All</>
+                    )}
+                  </button>
+                )}
               </>
             )}
           </div>
