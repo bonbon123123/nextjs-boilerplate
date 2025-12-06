@@ -44,8 +44,13 @@ const UserPage = () => {
   });
 
   const sessionContext = useContext(SessionContext);
+  
   if (!sessionContext?.userId) {
-    throw new Error("Brak dostępu do kontekstu sesji");
+    return (
+      <div className="min-h-screen bg-base-100 flex items-center justify-center">
+        <p className="text-lg opacity-70">Zaloguj się aby zobaczyć swój profil</p>
+      </div>
+    );
   }
 
   const fetchImages = async (type: string) => {
