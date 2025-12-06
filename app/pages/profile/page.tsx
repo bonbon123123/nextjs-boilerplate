@@ -98,24 +98,27 @@ const UserPage = () => {
     setFilteredImages(result);
   };
 
-  const fetchImages = useCallback(async (type: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/mongo/postsSpecial", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: sessionContext?.userId,
-          type: type,
-        }),
-      });
-      const data = await response.json();
-      setAllImages(data);
-      applyFilters(data, currentFilters);
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionContext?.userId]);
+  const fetchImages = useCallback(
+    async (type: string) => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/mongo/postsSpecial", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: sessionContext?.userId,
+            type: type,
+          }),
+        });
+        const data = await response.json();
+        setAllImages(data);
+        applyFilters(data, currentFilters);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [sessionContext?.userId]
+  );
 
   useEffect(() => {
     if (!sessionContext?.userId) return;
@@ -236,7 +239,7 @@ const UserPage = () => {
               <h1 className="text-3xl font-bold text-base-content">
                 {sessionContext.userName}
               </h1>
-              <p className="text-sm opacity-70 mt-1">Twój profil</p>
+              <p className="text-sm opacity-70 mt-1">Your Profile</p>
             </div>
           </div>
         </div>
