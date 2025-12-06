@@ -42,49 +42,6 @@ export default function MainPage() {
           </div>
         </div>
 
-        {Object.keys(votes).length > 0 && (
-          <div className="card bg-base-200 shadow-lg mb-8 p-6">
-            <h2 className="text-2xl font-semibold mb-4">Your Votes</h2>
-            <div className="overflow-x-auto">
-              <table className="table table-sm w-full">
-                <thead>
-                  <tr className="border-b border-base-300">
-                    <th className="text-base-content">Post ID</th>
-                    <th className="text-base-content">Vote</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.keys(votes).map((id, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-base-300 hover:bg-base-300"
-                    >
-                      <td className="text-sm">{id}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            votes[id] === 1
-                              ? "badge-success"
-                              : votes[id] === -1
-                              ? "badge-error"
-                              : "badge-neutral"
-                          }`}
-                        >
-                          {votes[id] === 1
-                            ? "👍"
-                            : votes[id] === -1
-                            ? "👎"
-                            : "○"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
         <div className="card bg-base-200 shadow-lg p-6">
           <h2 className="text-2xl font-semibold mb-4">Upload Images</h2>
           <DropImageUploader />
