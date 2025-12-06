@@ -153,11 +153,11 @@ const UserPage = () => {
   const getSectionLabel = (section: string): string => {
     switch (section) {
       case "added":
-        return "Dodane";
+        return "Added";
       case "liked":
-        return "Polubione";
+        return "Liked";
       case "saved":
-        return "Zapisane";
+        return "Saved";
       default:
         return "";
     }
