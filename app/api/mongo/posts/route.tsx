@@ -3,6 +3,7 @@ import Post from "../models/Post";
 import User from "../models/User";
 import dbConnect from "../db";
 
+// TypeScript potrzebuje znać strukturę - Mongoose schema tego nie zapewnia
 interface PostDocument {
   _id: string;
   userId: string;
@@ -76,6 +77,7 @@ function calculateRanking(
   }
 }
 
+// Pomocnicza funkcja do sprawdzania, czy żądanie pochodzi z wewnątrz aplikacji
 function isInternalRequest(req: Request): boolean {
   const url = new URL(req.url);
   const origin = req.headers.get("origin");
@@ -113,7 +115,7 @@ export async function GET(req: Request) {
   // Parametry dla publicznego API
   const apiMode = url.searchParams.get("api") === "true";
   const redirect = url.searchParams.get("redirect") === "true";
-  const index = parseInt(url.searchParams.get("index") || "0");
+  const index = parseInt(url.searchParams.get("index") || "0"); // Który obrazek (0-based)
 
   try {
     const query: any = {};
@@ -230,6 +232,14 @@ export async function GET(req: Request) {
         }
       }
 
+      if (apiMode) {
+        const urls = posts.map((post) => post.url);
+        return new NextResponse(JSON.stringify(urls), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       return new NextResponse(
         JSON.stringify({
           posts,
@@ -273,6 +283,14 @@ export async function GET(req: Request) {
             { status: 404 }
           );
         }
+      }
+
+      if (apiMode) {
+        const urls = posts.map((post) => post.url);
+        return new NextResponse(JSON.stringify(urls), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       return new NextResponse(
