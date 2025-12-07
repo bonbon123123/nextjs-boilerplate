@@ -3,6 +3,28 @@ import Post from "../models/Post";
 import User from "../models/User";
 import dbConnect from "../db";
 
+interface PostDocument {
+  _id: string;
+  userId: string;
+  url: string;
+  tags: string[];
+  upvotes: number;
+  downvotes: number;
+  createdAt: Date;
+  updatedAt: Date;
+  width: number;
+  height: number;
+  locked: boolean;
+  name: string;
+  size: number;
+  type: string;
+  commentsCount?: number;
+}
+
+interface PostWithRanking extends PostDocument {
+  rankingScore: number;
+}
+
 function getFreshnessMultiplier(createdAt: Date): number {
   const now = Date.now();
   const postTime = new Date(createdAt).getTime();
@@ -12,20 +34,20 @@ function getFreshnessMultiplier(createdAt: Date): number {
   const oneMonth = 30 * 24 * 60 * 60 * 1000;
 
   if (ageInMs < oneWeek) {
-    // Ostatni tydzień: *1.0
     return 1.0;
   } else if (ageInMs < oneMonth) {
-    // Ostatni miesiąc: *0.9
     return 0.9;
   } else {
-    // Starsze: 0.8 - (liczba_miesięcy * 0.1), minimum 0.1
     const monthsOld = Math.floor(ageInMs / oneMonth);
     const multiplier = 0.8 - (monthsOld - 1) * 0.1;
     return Math.max(0.1, multiplier);
   }
 }
 
-function calculateRanking(post: any, mode: "web" | "api" = "web"): number {
+function calculateRanking(
+  post: PostDocument,
+  mode: "web" | "api" = "web"
+): number {
   const upvotes = post.upvotes || 0;
   const downvotes = post.downvotes || 0;
   const comments = post.commentsCount || 0;
@@ -34,11 +56,9 @@ function calculateRanking(post: any, mode: "web" | "api" = "web"): number {
   const totalVotes = upvotes + downvotes;
   const voteRatio = totalVotes > 0 ? upvotes / totalVotes : 0;
 
-  // Mnożnik świeżości
   const freshnessMultiplier = getFreshnessMultiplier(post.createdAt);
 
   if (mode === "web") {
-    // Tryb webowy - większy nacisk na komentarze i zaangażowanie
     const engagementScore = netVotes * 1.0 + comments * 0.5;
     const qualityScore = voteRatio * 100;
     const controversyBonus =
@@ -48,13 +68,23 @@ function calculateRanking(post: any, mode: "web" | "api" = "web"): number {
       engagementScore * 0.5 + qualityScore * 0.3 + controversyBonus;
     return baseScore * freshnessMultiplier;
   } else {
-    // Tryb API - tylko najlepiej oceniane obrazy
     const qualityScore = netVotes * voteRatio;
     const popularityBonus = totalVotes > 50 ? Math.log(totalVotes) * 5 : 0;
 
     const baseScore = qualityScore * 0.7 + popularityBonus;
     return baseScore * freshnessMultiplier;
   }
+}
+
+function isInternalRequest(req: Request): boolean {
+  const url = new URL(req.url);
+  const origin = req.headers.get("origin");
+  const referer = req.headers.get("referer");
+
+  const sameDomain = origin && origin.includes(url.hostname);
+  const sameReferer = referer && referer.includes(url.hostname);
+
+  return !!(sameDomain || sameReferer);
 }
 
 export async function GET(req: Request) {
@@ -68,12 +98,11 @@ export async function GET(req: Request) {
   const matchAll = url.searchParams.get("matchAll") === "true";
   const matchExcludedAll = url.searchParams.get("matchExcludedAll") === "true";
   const specialTagsParam = url.searchParams.get("specialTags");
-  const sortBy = url.searchParams.get("sortBy"); // null, "votes", lub "date"
+  const sortBy = url.searchParams.get("sortBy");
   const sortOrder = url.searchParams.get("sortOrder") || "desc";
   const dateFrom = url.searchParams.get("dateFrom");
   const dateTo = url.searchParams.get("dateTo");
   const excludeId = url.searchParams.get("excludeId");
-  // Parametry dla paginacji i rankingu
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "40");
   const rankingMode = url.searchParams.get("rankingMode") as
@@ -81,9 +110,14 @@ export async function GET(req: Request) {
     | "api"
     | null;
 
+  // Parametry dla publicznego API
+  const apiMode = url.searchParams.get("api") === "true";
+  const redirect = url.searchParams.get("redirect") === "true";
+  const index = parseInt(url.searchParams.get("index") || "0");
+
   try {
     const query: any = {};
-    // Filtrowanie tagów normalnych
+
     if (tagsParam) {
       const tags = tagsParam.split(",").map((t) => t.trim());
       if (tags.length > 0) {
@@ -94,9 +128,11 @@ export async function GET(req: Request) {
         }
       }
     }
+
     if (excludeId) {
       query._id = { $ne: excludeId };
     }
+
     if (excludedTagsParam) {
       const excludedTags = excludedTagsParam.split(",").map((t) => t.trim());
       if (excludedTags.length > 0) {
@@ -137,7 +173,6 @@ export async function GET(req: Request) {
       }
     }
 
-    // Filtrowanie po datach (to jest filter, nie sortowanie!)
     if (dateFrom || dateTo) {
       query.createdAt = {};
       if (dateFrom) {
@@ -148,8 +183,8 @@ export async function GET(req: Request) {
       }
     }
 
+    // SORTOWANIE ZWYKŁE (votes lub date)
     if (sortBy === "votes" || sortBy === "date") {
-      // ZWYKŁE SORTOWANIE
       let postsQuery = Post.find(query);
 
       if (sortBy === "votes") {
@@ -164,13 +199,11 @@ export async function GET(req: Request) {
         });
       }
 
-      // Paginacja
       const skip = (page - 1) * limit;
       postsQuery = postsQuery.skip(skip).limit(limit).lean();
 
-      const posts = await postsQuery;
+      const posts = (await postsQuery) as PostDocument[];
 
-      // Dodatkowe sortowanie w JS dla votes
       if (sortBy === "votes") {
         posts.sort((a, b) => {
           const scoreA = a.upvotes - a.downvotes;
@@ -179,8 +212,23 @@ export async function GET(req: Request) {
         });
       }
 
-      // Policz całkowitą liczbę dokumentów
       const total = await Post.countDocuments(query);
+
+      // Jeśli api=true i redirect=true, przekieruj do obrazka o podanym indeksie
+      if (apiMode && redirect) {
+        if (index >= 0 && index < posts.length) {
+          return NextResponse.redirect(posts[index].url);
+        } else {
+          return new NextResponse(
+            JSON.stringify({
+              error: "Index out of range",
+              message: `Requested index ${index} but only ${posts.length} posts found`,
+              availableRange: `0-${posts.length - 1}`,
+            }),
+            { status: 404 }
+          );
+        }
+      }
 
       return new NextResponse(
         JSON.stringify({
@@ -193,26 +241,39 @@ export async function GET(req: Request) {
         { status: 200 }
       );
     } else {
+      // SORTOWANIE PO RANKINGU (domyślne)
       const mode = rankingMode || "web";
 
-      // Pobierz posty
       let postsQuery = Post.find(query).limit(1000).lean();
-      const allPosts = await postsQuery;
+      const allPosts = (await postsQuery) as PostDocument[];
 
-      // Oblicz ranking dla każdego posta
-      const postsWithRanking = allPosts.map((post) => ({
+      const postsWithRanking: PostWithRanking[] = allPosts.map((post) => ({
         ...post,
         rankingScore: calculateRanking(post, mode),
       }));
 
-      // Sortuj po rankingu
       postsWithRanking.sort((a, b) => b.rankingScore - a.rankingScore);
 
-      // Paginacja
       const skip = (page - 1) * limit;
       const paginatedPosts = postsWithRanking.slice(skip, skip + limit);
 
       const posts = paginatedPosts.map(({ rankingScore, ...post }) => post);
+
+      // Jeśli api=true i redirect=true, przekieruj do obrazka o podanym indeksie
+      if (apiMode && redirect) {
+        if (index >= 0 && index < posts.length) {
+          return NextResponse.redirect(posts[index].url);
+        } else {
+          return new NextResponse(
+            JSON.stringify({
+              error: "Index out of range",
+              message: `Requested index ${index} but only ${posts.length} posts found`,
+              availableRange: `0-${posts.length - 1}`,
+            }),
+            { status: 404 }
+          );
+        }
+      }
 
       return new NextResponse(
         JSON.stringify({
@@ -235,6 +296,16 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (!isInternalRequest(req)) {
+    return new NextResponse(
+      JSON.stringify({
+        error: "Unauthorized",
+        message: "POST requests are only allowed from the application itself",
+      }),
+      { status: 403 }
+    );
+  }
+
   await dbConnect();
   try {
     const data = await req.json();
@@ -252,6 +323,16 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  if (!isInternalRequest(req)) {
+    return new NextResponse(
+      JSON.stringify({
+        error: "Unauthorized",
+        message: "PATCH requests are only allowed from the application itself",
+      }),
+      { status: 403 }
+    );
+  }
+
   await dbConnect();
   console.log("patch1");
   try {
@@ -311,6 +392,16 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  if (!isInternalRequest(req)) {
+    return new NextResponse(
+      JSON.stringify({
+        error: "Unauthorized",
+        message: "DELETE requests are only allowed from the application itself",
+      }),
+      { status: 403 }
+    );
+  }
+
   await dbConnect();
   try {
     const { postId, userId, imageUrl } = await req.json();
