@@ -341,16 +341,6 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  if (!isInternalRequest(req)) {
-    return new NextResponse(
-      JSON.stringify({
-        error: "Unauthorized",
-        message: "PATCH requests are only allowed from the application itself",
-      }),
-      { status: 403 }
-    );
-  }
-
   await dbConnect();
   console.log("patch1");
   try {
@@ -410,16 +400,6 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  if (!isInternalRequest(req)) {
-    return new NextResponse(
-      JSON.stringify({
-        error: "Unauthorized",
-        message: "DELETE requests are only allowed from the application itself",
-      }),
-      { status: 403 }
-    );
-  }
-
   await dbConnect();
   try {
     const { postId, userId, imageUrl } = await req.json();
