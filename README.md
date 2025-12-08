@@ -254,21 +254,6 @@ const imageUrls = await response.json(); // Array of URLs
 console.log(imageUrls); // ["https://...", "https://...", ...]
 ```
 
-### Python Script
-```python
-import requests
-
-response = requests.get(
-    'https://nextjs-boilerplate-eight-psi-91.vercel.app/api/mongo/posts',
-    params={
-        'api': 'true',
-        'tags': 'wallpaper',
-        'limit': 10
-    }
-)
-image_urls = response.json()  # Array of URLs
-```
-
 ---
 
 ## Rate Limits & Best Practices
@@ -289,10 +274,4 @@ image_urls = response.json()  # Array of URLs
 - Images are filtered and ranked in real-time based on current vote counts
 - Maximum 1000 posts are evaluated for ranking (performance optimization)
 
----
 
-## Support
-
-For questions or issues, please contact the API maintainer through the main application.
-
-**Last Updated:** December 2024
