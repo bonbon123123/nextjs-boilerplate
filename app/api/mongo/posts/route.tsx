@@ -314,16 +314,6 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!isInternalRequest(req)) {
-    return new NextResponse(
-      JSON.stringify({
-        error: "Unauthorized",
-        message: "POST requests are only allowed from the application itself",
-      }),
-      { status: 403 }
-    );
-  }
-
   await dbConnect();
   try {
     const data = await req.json();
